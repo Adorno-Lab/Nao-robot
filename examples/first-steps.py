@@ -5,6 +5,7 @@
 
 from naoqi import ALProxy
 import sys
+import math
 
 # Getting robot's IP address from the command line:
 robot_ip = sys.argv[1]
@@ -33,7 +34,7 @@ motion.moveInit()  # To put the robot in a correct position first.
 # Every proxy you create has an attribute named POST.
 # We will call the method moveTo using the POST attribute so we can wait until
 # it finishes before continuing. But it could have been only motion.moveTo().
-id_motion = motion.post.moveTo(-0.5, 0, 0)
+id_motion = motion.post.moveTo(0.3, 0, math.pi/3)
 
 # We use the id returned by the post usage as parameter for the WAIT method.
 motion.wait(id_motion, 0)
