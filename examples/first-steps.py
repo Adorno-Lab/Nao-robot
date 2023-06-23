@@ -3,6 +3,9 @@
 # Check the tutorial "First steps programming NAO (Python and Ubuntu)" on
 # https://github.com/Adorno-Lab/Nao-robot/wiki/First-steps-programming-NAO-(Python-and-Ubuntu)
 
+# To execute this script, run on a terminal:
+#   $ python first-steps.py "<robot-ip-address>"
+
 from naoqi import ALProxy
 import sys
 import math
