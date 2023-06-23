@@ -22,15 +22,15 @@ tts.say("Hello, world!")
 # ------- Making NAO move:
 motion = ALProxy("ALMotion", robot_ip, 9559)
 # The robot will not move unless you set the stiffness of the joints to
-# something that is not 0:
+# something that is not 0.
 motion.setStiffnesses("Body", 1.0)
-motion.moveInit()  # To put the robot in a correct position first.
+motion.moveInit()  # to put the robot in a correct position first
 
 # The method moveTo(x, y, theta) moves the robot to a given pose in the ground
-# plane, relative to the robot frame.
+# plane, relative to the robot frame, where
 #   x: distance along the X axis (front) in meters
 #   y: distance along the Y axis (left) in meters
-#   theta: rotation around the Z axis (up) in radians
+#   theta: rotation around the Z axis (up) in radians.
 # Every proxy you create has an attribute named POST.
 # We will call the method moveTo using the POST attribute so we can wait until
 # it finishes before continuing. But it could have been only motion.moveTo().
@@ -40,6 +40,6 @@ id_motion = motion.post.moveTo(0.3, 0, math.pi/3)
 motion.wait(id_motion, 0)
 
 # ------- Making NAO move and speak at the same time:
-# We also use the POST attribute to call long methods in the background:
+# We also use the POST attribute to call long methods in the background.
 motion.post.moveTo(0.1, 0, 0)
 tts.say("I'm walking and saying a long sentence at the same time")
