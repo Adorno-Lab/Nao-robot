@@ -1,3 +1,9 @@
+# NAO Robot
+
+<p align="center"> <img src="https://github.com/Adorno-Lab/Nao-robot/assets/50972618/2fec55e3-66b6-457a-9708-8e509eaf6c3d"> </p>
+
+[Aldebaran documentation](http://doc.aldebaran.com/2-1/home_nao.html)
+
 ### NAO version and body type*
 
 - Version: V5
