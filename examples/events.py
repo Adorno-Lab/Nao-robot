@@ -59,7 +59,7 @@ class ReactModule(ALModule):
         vocabulary = ["robot"]  # list of words for the vocabulary
         speech_recognition.setVocabulary(vocabulary, False)  # second parameter is to enable or disable word spotting
         speech_recognition.pause(False)
-        speech_recognition.subscribe("ASRsubscriber")  # start writing in ALMemory's "WordRecognized"
+        speech_recognition.subscribe("SRSubscriber")  # start writing in ALMemory's "WordRecognized"
 
         # Define the minimum probability for a word to be considered recognized:
         self.word_probability = 0.5
