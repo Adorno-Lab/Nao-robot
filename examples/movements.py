@@ -33,7 +33,7 @@ def main():
         # [0.047143254429101944, 0.11501868069171906, 0.23024789988994598,
         # -0.9266910552978516, 1.0817198753356934, 0.12328142672777176]
 
-        # Activate arm tracking:
+        # Activate arm tracking (it implicitly activates Whole Body Balancer):
         motionProxy.wbEnableEffectorControl(arm, True)
 
         # An "Effector" is a predefined 3D point in the robot and it's generally
