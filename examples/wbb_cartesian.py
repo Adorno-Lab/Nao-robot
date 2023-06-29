@@ -57,9 +57,9 @@ def main():
         #       y axis RArm: [-0.10, 0.05] meters
         #       z axis: [-0.10, 0.10] meters
         if arm == "LArm":
-            target = [0.06, 0.05, 0.5]
+            target = [0.06, 0.05, 0.3]
         else:
-            target = [0.06, -0.05, 0.5]
+            target = [0.06, -0.05, 0.3]
         motion_proxy.wbSetEffectorControl(arm, target)
         time.sleep(3)
         motion_proxy.wbSetEffectorControl(arm, initial_pose[0:3])
