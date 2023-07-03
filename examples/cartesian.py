@@ -188,7 +188,7 @@ def main():
             motion_proxy.setPositions(arm,  # effector
                                       motion.FRAME_ROBOT,  # frame
                                       initial_pose,  # target vector
-                                      0.5,  # fraction of maximum speed to use
+                                      0.25,  # fraction of maximum speed to use
                                       pos_x + pos_y + pos_z)  # what to control
             time.sleep(3)
 
@@ -207,8 +207,83 @@ def main():
             motion_proxy.setPositions("Head",  # effector
                                       motion.FRAME_ROBOT,  # frame
                                       target,  # target vector
-                                      0.5,  # fraction of maximum speed to use
+                                      0.25,  # fraction of maximum speed to use
                                       or_wx + or_wy + or_wz)  # what to control
+            time.sleep(3)
+
+    #  ======== USING REACTIVE METHOD - setTransforms ==========================
+    if method == 4:
+        # ================= Making the arms move ===============================
+        arms = ["LArm", "RArm"]
+        for arm in arms:
+            # The getTransform method returns an homogeneous transformation
+            # matrix (HTM) to any joint, chain, or sensor relative to the chosen
+            # frame. The last parameter sets if the sensors will be used to
+            # determine the transformation.
+            initial_transform = motion_proxy.getTransform(arm,
+                                                          motion.FRAME_ROBOT,
+                                                          False)
+
+            pos_x = 1
+            pos_y = 2
+            pos_z = 4
+            or_wx = 8
+            or_wy = 16
+            or_wz = 32
+
+            # Defining the HTM with different translation only:
+            if arm == "LArm":
+                target = [initial_transform[0], initial_transform[1],
+                          initial_transform[2], 0.06,
+                          initial_transform[4], initial_transform[5],
+                          initial_transform[6], 0.05,
+                          initial_transform[8], initial_transform[9],
+                          initial_transform[10], 0.3,
+                          0, 0, 0, 1]
+            else:
+                target = [initial_transform[0], initial_transform[1],
+                          initial_transform[2], 0.06,
+                          initial_transform[4], initial_transform[5],
+                          initial_transform[6], -0.05,
+                          initial_transform[8], initial_transform[9],
+                          initial_transform[10], 0.3,
+                          0, 0, 0, 1]
+
+            motion_proxy.setTransforms(arm,  # effector
+                                       motion.FRAME_ROBOT,  # frame
+                                       target,  # target vector
+                                       0.5,  # fraction of maximum speed to use
+                                       pos_x + pos_y + pos_z)  # what to control
+            time.sleep(3)
+            motion_proxy.setTransforms(arm,  # effector
+                                       motion.FRAME_ROBOT,  # frame
+                                       initial_transform,  # target vector
+                                       0.25,  # fraction of maximum speed to use
+                                       pos_x + pos_y + pos_z)  # what to control
+            time.sleep(3)
+
+        # ================= Making the head move ===============================
+        initial_transform = motion_proxy.getTransform("Head",
+                                                      motion.FRAME_ROBOT, False)
+
+        # Defining the HTMs with different rotations only:
+        angle = 30 * math.pi / 180
+        target1 = [math.cos(angle), -math.sin(angle), 0, initial_transform[3],
+                   math.sin(angle), math.cos(angle), 0, initial_transform[7],
+                   0, 0, 1, initial_transform[11],
+                   0, 0, 0, 1]
+        target2 = [math.cos(-angle), -math.sin(-angle), 0, initial_transform[3],
+                   math.sin(-angle), math.cos(-angle), 0, initial_transform[7],
+                   0, 0, 1, initial_transform[11],
+                   0, 0, 0, 1]
+        targets = [target1, initial_transform, target2, initial_transform]
+
+        for target in targets:
+            motion_proxy.setTransforms("Head",  # effector
+                                       motion.FRAME_ROBOT,  # frame
+                                       target,  # target vector
+                                       0.25,  # fraction of maximum speed to use
+                                       or_wx + or_wy + or_wz)  # what to control
             time.sleep(3)
 
     # The rest() method sends the robot to a relaxed and safe position and sets
