@@ -31,10 +31,10 @@ def main():
     # By default, the script uses an animation method and the
     # positionInterpolations() method. If there is a commandline definition
     # about the method, it overwrites the default.
-    #   method 1: animation, positionInterpolations()
-    #   method 2: animation, transformInterpolations()
-    #   method 3: reactive, setPositions()
-    #   method 4: reactive, setTransforms()
+    #   method 1: animation, positionInterpolations() - blocking call
+    #   method 2: animation, transformInterpolations() - blocking call
+    #   method 3: reactive, setPositions() - no blocking call
+    #   method 4: reactive, setTransforms() - no blocking call
     method = 1
     if len(sys.argv) > 2:
         method = int(sys.argv[2])
@@ -128,6 +128,7 @@ def main():
                           initial_transform[8], initial_transform[9], initial_transform[10], 0.3,
                           0, 0, 0, 1]
 
+            # The transformInterpolations method is a blocking call.
             motion_proxy.transformInterpolations(arm,  # effector
                                                  motion.FRAME_ROBOT,  # frame
                                                  [target, initial_transform],  # target vector
@@ -136,8 +137,7 @@ def main():
 
         # ================= Making the head move ===============================
         initial_transform = motion_proxy.getTransform("Head",
-                                                      motion.FRAME_ROBOT,
-                                                      False)
+                                                      motion.FRAME_ROBOT, False)
 
         # Defining the HTMs with different rotations only:
         angle = 30 * math.pi / 180
@@ -150,11 +150,66 @@ def main():
                    0, 0, 1, initial_transform[11],
                    0, 0, 0, 1]
         target = [target1, initial_transform, target2, initial_transform]
+
         motion_proxy.transformInterpolations("Head",  # effector
                                              motion.FRAME_ROBOT,  # frame
-                                             target, # target vector
+                                             target,  # target vector
                                              or_wx + or_wy + or_wz,  # what to control
                                              [3, 6, 9, 12])  # relative times in seconds corresponding to the path points
+
+    #  ======== USING REACTIVE METHOD - setPositions ===========================
+    if method == 3:
+        # ================= Making the arms move ===============================
+        arms = ["LArm", "RArm"]
+        for arm in arms:
+            initial_pose = motion_proxy.getPosition(arm,
+                                                    motion.FRAME_ROBOT, False)
+
+            if arm == "LArm":
+                target = [0.06, 0.05, 0.3,
+                          initial_pose[3], initial_pose[4], initial_pose[5]]
+            else:
+                target = [0.06, -0.05, 0.3,
+                          initial_pose[3], initial_pose[4], initial_pose[5]]
+
+            pos_x = 1
+            pos_y = 2
+            pos_z = 4
+            or_wx = 8
+            or_wy = 16
+            or_wz = 32
+
+            motion_proxy.setPositions(arm,  # effector
+                                      motion.FRAME_ROBOT,  # frame
+                                      target,  # target vector
+                                      0.5,  # fraction of maximum speed to use
+                                      pos_x + pos_y + pos_z)  # what to control
+            time.sleep(3)
+            motion_proxy.setPositions(arm,  # effector
+                                      motion.FRAME_ROBOT,  # frame
+                                      initial_pose,  # target vector
+                                      0.5,  # fraction of maximum speed to use
+                                      pos_x + pos_y + pos_z)  # what to control
+            time.sleep(3)
+
+        # ================= Making the head move ===============================
+        initial_pose = motion_proxy.getPosition("Head",
+                                                motion.FRAME_ROBOT, False)
+
+        targets = [[initial_pose[0], initial_pose[1], initial_pose[2],
+                    0, 0, 30 * math.pi / 180],
+                   [initial_pose[0], initial_pose[1], initial_pose[2], 0, 0, 0],
+                   [initial_pose[0], initial_pose[1], initial_pose[2],
+                    0, 0, -30 * math.pi / 180],
+                   [initial_pose[0], initial_pose[1], initial_pose[2], 0, 0, 0]]
+
+        for target in targets:
+            motion_proxy.setPositions("Head",  # effector
+                                      motion.FRAME_ROBOT,  # frame
+                                      target,  # target vector
+                                      0.5,  # fraction of maximum speed to use
+                                      or_wx + or_wy + or_wz)  # what to control
+            time.sleep(3)
 
     # The rest() method sends the robot to a relaxed and safe position and sets
     # its motors off. For NAO H25, if the robot is standing, it goes to the
