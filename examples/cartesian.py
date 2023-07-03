@@ -28,18 +28,19 @@ def main():
     # predefined postures such as StandInit. It is a blocking call.
     posture_proxy.goToPosture("StandInit", 0.5)
 
-    # By default, the script uses an animation method and the
-    # positionInterpolations() method. If there is a commandline definition
-    # about the method, it overwrites the default.
-    #   method 1: animation, positionInterpolations() - blocking call
-    #   method 2: animation, transformInterpolations() - blocking call
-    #   method 3: reactive, setPositions() - no blocking call
-    #   method 4: reactive, setTransforms() - no blocking call
+    # There are four methods available for cartesian control of the robot. By
+    # default, the script uses positionInterpolations(), a blocking method that
+    # receives pose vectors as parameter. If there is a commandline definition
+    # about the method to be used, it overwrites the default.
+    #   method 1: positionInterpolations() - blocking call, pose vector
+    #   method 2: transformInterpolations() - blocking call, HTM
+    #   method 3: setPositions() - non-blocking call, pose vector
+    #   method 4: setTransforms() - non-blocking call, HTM
     method = 1
     if len(sys.argv) > 2:
         method = int(sys.argv[2])
 
-    #  ======== USING ANIMATION METHOD - positionInterpolations ================
+    #  ======== USING positionInterpolations() METHOD ==========================
     if method == 1:
         # ================= Making the arms move ===============================
         arms = ["LArm", "RArm"]
@@ -96,7 +97,7 @@ def main():
                                             or_wx + or_wy + or_wz,  # what to control
                                             [3, 6, 9, 12])  # relative times in seconds corresponding to the path points
 
-    #  ======== USING ANIMATION METHOD - transformInterpolations ===============
+    #  ======== USING transformInterpolations() METHOD =========================
     if method == 2:
         # ================= Making the arms move ===============================
         arms = ["LArm", "RArm"]
@@ -157,7 +158,7 @@ def main():
                                              or_wx + or_wy + or_wz,  # what to control
                                              [3, 6, 9, 12])  # relative times in seconds corresponding to the path points
 
-    #  ======== USING REACTIVE METHOD - setPositions ===========================
+    #  ======== USING setPositions() METHOD ====================================
     if method == 3:
         # ================= Making the arms move ===============================
         arms = ["LArm", "RArm"]
@@ -179,6 +180,7 @@ def main():
             or_wy = 16
             or_wz = 32
 
+            # The setPositions method is a non-blocking call.
             motion_proxy.setPositions(arm,  # effector
                                       motion.FRAME_ROBOT,  # frame
                                       target,  # target vector
@@ -211,7 +213,7 @@ def main():
                                       or_wx + or_wy + or_wz)  # what to control
             time.sleep(3)
 
-    #  ======== USING REACTIVE METHOD - setTransforms ==========================
+    #  ======== USING setTransforms() METHOD ===================================
     if method == 4:
         # ================= Making the arms move ===============================
         arms = ["LArm", "RArm"]
@@ -249,6 +251,7 @@ def main():
                           initial_transform[10], 0.3,
                           0, 0, 0, 1]
 
+            # The setTransforms method is a non-blocking call.
             motion_proxy.setTransforms(arm,  # effector
                                        motion.FRAME_ROBOT,  # frame
                                        target,  # target vector
