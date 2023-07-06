@@ -132,7 +132,7 @@ def main():
             # The transformInterpolations method is a blocking call.
             motion_proxy.transformInterpolations(arm,  # effector
                                                  motion.FRAME_ROBOT,  # frame
-                                                 [target, initial_transform],  # target vector
+                                                 [target, initial_transform],  # target transform
                                                  t_x + t_y + t_z,  # what to control
                                                  [3, 6])  # relative times in seconds corresponding to the path points
 
@@ -154,7 +154,7 @@ def main():
 
         motion_proxy.transformInterpolations("Head",  # effector
                                              motion.FRAME_ROBOT,  # frame
-                                             target,  # target vector
+                                             target,  # target transform
                                              r_wx + r_wy + r_wz,  # what to control
                                              [3, 6, 9, 12])  # relative times in seconds corresponding to the path points
 
@@ -254,13 +254,13 @@ def main():
             # The setTransforms method is a non-blocking call.
             motion_proxy.setTransforms(arm,  # effector
                                        motion.FRAME_ROBOT,  # frame
-                                       target,  # target vector
+                                       target,  # target transform
                                        0.5,  # fraction of maximum speed to use
                                        t_x + t_y + t_z)  # what to control
             time.sleep(3)
             motion_proxy.setTransforms(arm,  # effector
                                        motion.FRAME_ROBOT,  # frame
-                                       initial_transform,  # target vector
+                                       initial_transform,  # target transform
                                        0.25,  # fraction of maximum speed to use
                                        t_x + t_y + t_z)  # what to control
             time.sleep(3)
@@ -284,7 +284,7 @@ def main():
         for target in targets:
             motion_proxy.setTransforms("Head",  # effector
                                        motion.FRAME_ROBOT,  # frame
-                                       target,  # target vector
+                                       target,  # target transform
                                        0.25,  # fraction of maximum speed to use
                                        r_wx + r_wy + r_wz)  # what to control
             time.sleep(3)
