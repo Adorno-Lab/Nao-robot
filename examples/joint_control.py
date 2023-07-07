@@ -67,11 +67,10 @@ def main():
                           [0.45257824659347534, initial_angles[4]],  # RWristYaw
                           [0.25, initial_angles[5]]]  # RHand
 
-            joints = motion_proxy.getBodyNames(arm)  # names of the joints in the arm chain
             times = [[3, 6]]*len(initial_angles)
 
             # The angleInterpolation method is a blocking call.
-            motion_proxy.angleInterpolation(joints,  # joint
+            motion_proxy.angleInterpolation(arm,  # joint
                                             target,  # target angles
                                             times,  # relative times in seconds corresponding to the path points
                                             True)  # if the angles are absolute or not
@@ -108,14 +107,12 @@ def main():
                           0.45257824659347534,  # RWristYaw
                           0.25]  # RHand
 
-            joints = motion_proxy.getBodyNames(arm)  # names of the joints in the arm chain
-
             # The angleInterpolationWithSpeed method does not accept multiple
             # target angles in one single method call, so we use a FOR loop, but
             # since it is a blocking call we do not need time.sleep().
             targets = [target, initial_angles]
             for target in targets:
-                motion_proxy.angleInterpolationWithSpeed(joints,  # joint
+                motion_proxy.angleInterpolationWithSpeed(arm,  # joint
                                                          target,  # target angles
                                                          0.1)  # fraction of maximum speed to use
 
@@ -151,12 +148,10 @@ def main():
                           0.45257824659347534,  # RWristYaw
                           0.25]  # RHand
 
-            joints = motion_proxy.getBodyNames(arm)  # names of the joints in the arm chain
-
             # The setAngles method is a non-blocking call.
             targets = [target, initial_angles]
             for target in targets:
-                motion_proxy.setAngles(joints,  # joint
+                motion_proxy.setAngles(arm,  # joint
                                        target,  # target angles
                                        0.1)  # fraction of maximum speed to use
                 time.sleep(2)
