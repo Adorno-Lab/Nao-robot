@@ -112,6 +112,12 @@ class ReactModule(ALModule):
                                 "React",  # callback module
                                 "when_speech_recognized")  # module's callback method
 
+    def stop_all(self):
+        memory.unsubscribeToEvent("PeoplePerception/JustArrived", "React")
+        memory.unsubscribeToEvent("PeoplePerception/JustLeft", "React")
+        memory.unsubscribeToEvent("WordRecognized", "React")
+        speech_recognition.pause(True)
+
 
 def main():
     # A broker is an object that allows you to find modules and methods and to
@@ -137,7 +143,8 @@ def main():
     except KeyboardInterrupt:
         print
         print "Interrupted by user, shutting down"
-        myBroker.shutdown()
+        React.stop_all()
+        my_broker.shutdown()
         sys.exit(0)
 
 
