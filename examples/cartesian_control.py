@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 
 from naoqi import ALProxy
-import motion
 
 import sys
 import time
@@ -28,14 +27,19 @@ def main():
     # predefined postures such as StandInit. It is a blocking call.
     posture_proxy.goToPosture("StandInit", 0.5)
 
+    # Defining variables to hold the number relative to each frame:
+    FRAME_TORSO = 0
+    FRAME_WORLD = 1
+    FRAME_ROBOT = 2
+
     # There are four methods available for cartesian control of the robot. By
     # default, the script uses positionInterpolations(), a blocking method that
-    # receives pose vectors as parameter. If there is a commandline definition
-    # about the method to be used, it overwrites the default.
-    #   method 1: positionInterpolations() - blocking call, pose vector
-    #   method 2: transformInterpolations() - blocking call, HTM
-    #   method 3: setPositions() - non-blocking call, pose vector
-    #   method 4: setTransforms() - non-blocking call, HTM
+    # receives pose vectors and relative times as parameters. If there is a
+    # commandline choice of method to be used, it overwrites the default.
+    #   method 1: positionInterpolations() - blocking, pose, relative times
+    #   method 2: transformInterpolations() - blocking, HTM, relative times
+    #   method 3: setPositions() - non-blocking, pose, speed fraction
+    #   method 4: setTransforms() - non-blocking, HTM, speed fraction
     method = 1
     if len(sys.argv) > 2:
         method = int(sys.argv[2])
@@ -49,8 +53,7 @@ def main():
             # (x, y, z, wx, wy, wz) of any joint, chain, or sensor in meters and
             # radians, relative to the chosen frame. The last parameter sets if
             # the sensors will be used to determine the pose.
-            initial_pose = motion_proxy.getPosition(arm,
-                                                    motion.FRAME_ROBOT, False)
+            initial_pose = motion_proxy.getPosition(arm, FRAME_ROBOT, False)
 
             # To set the target position of the arm, the parameters are position
             # and orientation (x, y, z, wx, wy, wz) in meters and radians.
@@ -76,13 +79,13 @@ def main():
             # parameter should be t_x + t_y + t_z = 7.
             # The positionInterpolations method is a blocking call.
             motion_proxy.positionInterpolations(arm,  # effector
-                                                motion.FRAME_ROBOT,  # frame
+                                                FRAME_ROBOT,  # frame
                                                 [target, initial_pose],  # target vector
                                                 t_x + t_y + t_z,  # what to control
                                                 [3, 6])  # relative times in seconds corresponding to the path points
 
         # ================= Making the head move ===============================
-        initial_pose = motion_proxy.getPosition("Head", motion.FRAME_ROBOT, False)
+        initial_pose = motion_proxy.getPosition("Head", FRAME_ROBOT, False)
 
         targets = [[initial_pose[0], initial_pose[1], initial_pose[2],
                     0, 0, 30 * math.pi / 180],
@@ -92,7 +95,7 @@ def main():
                    [initial_pose[0], initial_pose[1], initial_pose[2], 0, 0, 0]]
 
         motion_proxy.positionInterpolations("Head",  # effector
-                                            motion.FRAME_ROBOT,  # frame
+                                            FRAME_ROBOT,  # frame
                                             targets,  # target vector
                                             r_wx + r_wy + r_wz,  # what to control
                                             [3, 6, 9, 12])  # relative times in seconds corresponding to the path points
@@ -106,9 +109,7 @@ def main():
             # matrix (HTM) to any joint, chain, or sensor relative to the chosen
             # frame. The last parameter sets if the sensors will be used to
             # determine the transformation.
-            initial_transform = motion_proxy.getTransform(arm,
-                                                          motion.FRAME_ROBOT,
-                                                          False)
+            initial_transform = motion_proxy.getTransform(arm, FRAME_ROBOT, False)
 
             t_x = 1
             t_y = 2
@@ -131,14 +132,13 @@ def main():
 
             # The transformInterpolations method is a blocking call.
             motion_proxy.transformInterpolations(arm,  # effector
-                                                 motion.FRAME_ROBOT,  # frame
+                                                 FRAME_ROBOT,  # frame
                                                  [target, initial_transform],  # target transform
                                                  t_x + t_y + t_z,  # what to control
                                                  [3, 6])  # relative times in seconds corresponding to the path points
 
         # ================= Making the head move ===============================
-        initial_transform = motion_proxy.getTransform("Head",
-                                                      motion.FRAME_ROBOT, False)
+        initial_transform = motion_proxy.getTransform("Head", FRAME_ROBOT, False)
 
         # Defining the HTMs with different rotations only:
         angle = 30 * math.pi / 180
@@ -153,7 +153,7 @@ def main():
         target = [target1, initial_transform, target2, initial_transform]
 
         motion_proxy.transformInterpolations("Head",  # effector
-                                             motion.FRAME_ROBOT,  # frame
+                                             FRAME_ROBOT,  # frame
                                              target,  # target transform
                                              r_wx + r_wy + r_wz,  # what to control
                                              [3, 6, 9, 12])  # relative times in seconds corresponding to the path points
@@ -163,8 +163,7 @@ def main():
         # ================= Making the arms move ===============================
         arms = ["LArm", "RArm"]
         for arm in arms:
-            initial_pose = motion_proxy.getPosition(arm,
-                                                    motion.FRAME_ROBOT, False)
+            initial_pose = motion_proxy.getPosition(arm, FRAME_ROBOT, False)
 
             if arm == "LArm":
                 target = [0.06, 0.05, 0.3,
@@ -182,21 +181,20 @@ def main():
 
             # The setPositions method is a non-blocking call.
             motion_proxy.setPositions(arm,  # effector
-                                      motion.FRAME_ROBOT,  # frame
+                                      FRAME_ROBOT,  # frame
                                       target,  # target vector
                                       0.25,  # fraction of maximum speed to use
                                       t_x + t_y + t_z)  # what to control
             time.sleep(3)
             motion_proxy.setPositions(arm,  # effector
-                                      motion.FRAME_ROBOT,  # frame
+                                      FRAME_ROBOT,  # frame
                                       initial_pose,  # target vector
                                       0.25,  # fraction of maximum speed to use
                                       t_x + t_y + t_z)  # what to control
             time.sleep(3)
 
         # ================= Making the head move ===============================
-        initial_pose = motion_proxy.getPosition("Head",
-                                                motion.FRAME_ROBOT, False)
+        initial_pose = motion_proxy.getPosition("Head", FRAME_ROBOT, False)
 
         targets = [[initial_pose[0], initial_pose[1], initial_pose[2],
                     0, 0, 30 * math.pi / 180],
@@ -207,7 +205,7 @@ def main():
 
         for target in targets:
             motion_proxy.setPositions("Head",  # effector
-                                      motion.FRAME_ROBOT,  # frame
+                                      FRAME_ROBOT,  # frame
                                       target,  # target vector
                                       0.25,  # fraction of maximum speed to use
                                       r_wx + r_wy + r_wz)  # what to control
@@ -222,9 +220,7 @@ def main():
             # matrix (HTM) to any joint, chain, or sensor relative to the chosen
             # frame. The last parameter sets if the sensors will be used to
             # determine the transformation.
-            initial_transform = motion_proxy.getTransform(arm,
-                                                          motion.FRAME_ROBOT,
-                                                          False)
+            initial_transform = motion_proxy.getTransform(arm, FRAME_ROBOT, False)
 
             t_x = 1
             t_y = 2
@@ -253,21 +249,20 @@ def main():
 
             # The setTransforms method is a non-blocking call.
             motion_proxy.setTransforms(arm,  # effector
-                                       motion.FRAME_ROBOT,  # frame
+                                       FRAME_ROBOT,  # frame
                                        target,  # target transform
                                        0.5,  # fraction of maximum speed to use
                                        t_x + t_y + t_z)  # what to control
             time.sleep(3)
             motion_proxy.setTransforms(arm,  # effector
-                                       motion.FRAME_ROBOT,  # frame
+                                       FRAME_ROBOT,  # frame
                                        initial_transform,  # target transform
                                        0.25,  # fraction of maximum speed to use
                                        t_x + t_y + t_z)  # what to control
             time.sleep(3)
 
         # ================= Making the head move ===============================
-        initial_transform = motion_proxy.getTransform("Head",
-                                                      motion.FRAME_ROBOT, False)
+        initial_transform = motion_proxy.getTransform("Head", FRAME_ROBOT, False)
 
         # Defining the HTMs with different rotations only:
         angle = 30 * math.pi / 180
@@ -283,7 +278,7 @@ def main():
 
         for target in targets:
             motion_proxy.setTransforms("Head",  # effector
-                                       motion.FRAME_ROBOT,  # frame
+                                       FRAME_ROBOT,  # frame
                                        target,  # target transform
                                        0.25,  # fraction of maximum speed to use
                                        r_wx + r_wy + r_wz)  # what to control

@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 
 from naoqi import ALProxy
-import motion
 
 import sys
 import time
@@ -29,12 +28,14 @@ def main():
     posture_proxy.goToPosture("StandInit", 0.5)
 
     # There are four methods available for joint control of the robot. By
-    # default, the script uses angleInterpolation(). If there is a commandline
-    # definition about the method to be used, it overwrites the default.
-    #   method 1: angleInterpolation()
-    #   method 2: angleInterpolationWithSpeed()
-    #   method 3: setAngles()
-    #   method 4: changeAngles()
+    # default, the script uses angleInterpolation(), a blocking method that
+    # receives absolute or relative angles and relative times as parameters. If
+    # there is a commandline choice of method to be used, it overwrites the
+    # default.
+    #   method 1: angleInterpolation() - blocking, absolute or relative angles, relative times
+    #   method 2: angleInterpolationWithSpeed() - blocking, absolute angles, speed fraction
+    #   method 3: setAngles() - non-blocking, absolute angles, speed fraction
+    #   method 4: changeAngles() - non-blocking, relative angles, speed fraction
     method = 1
     if len(sys.argv) > 2:
         method = int(sys.argv[2])
