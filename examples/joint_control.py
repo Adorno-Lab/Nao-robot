@@ -38,7 +38,10 @@ def main():
     #   method 4: changeAngles() - non-blocking, relative angles, speed fraction
     method = 1
     if len(sys.argv) > 2:
-        method = int(sys.argv[2])
+        try:
+            method = int(sys.argv[2])
+        except:
+            method = sys.argv[2]
 
     #  ======== USING angleInterpolation() METHOD ==============================
     if method == 1:
@@ -180,6 +183,20 @@ def main():
                                       target,  # target angles
                                       0.25)  # fraction of maximum speed to use
             time.sleep(3)
+
+    # ======== MOVING HANDS ====================================================
+    if method == "hand":
+        # Opening hands using the argument POST so they can open together:
+        motion_proxy.post.openHand("LHand")
+        motion_proxy.post.openHand("RHand")
+
+        time.sleep(2)  # waiting the movement to finish
+
+        # Closing hands:
+        motion_proxy.post.closeHand("LHand")
+        motion_proxy.post.closeHand("RHand")
+
+        time.sleep(1)  # waiting the movement to finish
 
     # The rest() method sends the robot to a relaxed and safe position and sets
     # its motors off. For NAO H25, if the robot is standing, it goes to the
