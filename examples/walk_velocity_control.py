@@ -21,16 +21,16 @@ def main():
     # Set the destination pose (meters and radians) with respect to FRAME_WORLD:
     x_final = 1.0
     y_final = 0.0
-    theta_final = 0
+    theta_final = 0.0
 
     # Set the tolerance for the desired position:
     error_position = 0.05
-    error_orientation = 1 * math.pi / 180
 
     # First, we will make the robot walk towards the destination position,
     # reducing its velocity as it gets close to the final point. We use the
     # moveToward() method, so the velocity is controlled by the length of the
-    # robot's step (the bigger the step length, faster the robot walks).
+    # robot's step (the bigger the step length, faster the robot walks). We
+    # assume that the robot starts aligned with the FRAME_WORLD.
     try:
         # The moveToward() is a non-blocking method. The most recent command
         # overwrites the previous one, so we use a WHILE loop until the stopping
@@ -87,24 +87,11 @@ def main():
 
     # Turning the robot to the desired orientation:
     try:
-        while True:
-            current = motion_proxy.getRobotPosition(False)
-            theta_current = current[2]
-            print "theta (deg): ", current[2] * 180 / math.pi  # in degrees
+        current = motion_proxy.getRobotPosition(False)
+        theta_current = current[2]
 
-            # The rotation velocity will start reducing when the angle
-            # displacement is 0.5rad (aprox. 28.65 deg).
-            theta = 2*(theta_final - theta_current)
-            if theta > 1:
-                theta = 1
-            if theta < -1:
-                theta = -1
-
-            motion_proxy.moveToward(0, 0, theta)
-
-            if abs(theta_final - theta_current) < error_orientation:
-                motion_proxy.moveToward(0, 0, 0)
-                break
+        theta = theta_final - theta_current
+        motion_proxy.moveTo(0, 0, theta)
 
     except KeyboardInterrupt:
         motion_proxy.moveToward(0, 0, 0)
@@ -120,22 +107,11 @@ def main():
 
     # Turning the robot so it can be 180 degrees with respect to FRAME_WORLD:
     try:
-        while True:
-            current = motion_proxy.getRobotPosition(False)
-            theta_current = current[2]
-            print "theta: ", current[2] * 180 / math.pi  # in degrees
+        current = motion_proxy.getRobotPosition(False)
+        theta_current = current[2]
 
-            theta = 2*(math.pi - theta_current)
-            if theta > 1:
-                theta = 1
-            if theta < -1:
-                theta = -1
-
-            motion_proxy.moveToward(0, 0, theta)
-
-            if abs(math.pi - theta_current) < error_orientation:
-                motion_proxy.moveToward(0, 0, 0)
-                break
+        theta = math.pi - theta_current
+        motion_proxy.moveTo(0, 0, theta)
 
     except KeyboardInterrupt:
         motion_proxy.moveToward(0, 0, 0)
@@ -170,8 +146,7 @@ def main():
 
             motion_proxy.moveToward(x, y, 0)
 
-            if abs(x_current) < error_position and \
-                    abs(y_current) < error_position:
+            if abs(x_current) < error_position and abs(y_current) < error_position:
                 motion_proxy.moveToward(0, 0, 0)
                 break
 
@@ -186,22 +161,11 @@ def main():
 
     # Turning the robot to the original orientation:
     try:
-        while True:
-            current = motion_proxy.getRobotPosition(False)
-            theta_current = current[2]
-            print "theta: ", current[2] * 180 / math.pi  # in degrees
+        current = motion_proxy.getRobotPosition(False)
+        theta_current = current[2]
 
-            theta = 2*(-theta_current)
-            if theta > 1:
-                theta = 1
-            if theta < -1:
-                theta = -1
-
-            motion_proxy.moveToward(0, 0, theta)
-
-            if abs(theta_current) < error_orientation:
-                motion_proxy.moveToward(0, 0, 0)
-                break
+        theta = -theta_current
+        motion_proxy.moveTo(0, 0, theta)
 
     except KeyboardInterrupt:
         motion_proxy.moveToward(0, 0, 0)
