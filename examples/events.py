@@ -14,8 +14,16 @@ from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule
 
-import sys
 import time
+import sys
+import argparse
+
+# Command line arguments:
+parser = argparse.ArgumentParser(
+    description='Example of a module for the robot to react to some events.')
+parser.add_argument('robot_ip', type=str,
+                    help='the IP address of the robot')
+args = parser.parse_args()
 
 # Global variables to store the modules instances:
 React = None  # module that will be created
@@ -105,6 +113,7 @@ class ReactModule(ALModule):
         # where ph_i is one phrase from the vocabulary and pb_i is the estimated
         # probability that ph_i has been said by the human. The order inside the
         # vector is from the most likely phrases to the less likely.
+        # If the person says "robot", the robot says "human":
         if speech_data[0] == "robot" and speech_data[1] > self.word_probability:
             self.tts.say("human")
 
@@ -112,7 +121,10 @@ class ReactModule(ALModule):
                                 "React",  # callback module
                                 "when_speech_recognized")  # module's callback method
 
-    def stop_all(self):
+    @staticmethod
+    def stop_all():
+        """ Stop the recognition of the events. """
+
         memory.unsubscribeToEvent("PeoplePerception/JustArrived", "React")
         memory.unsubscribeToEvent("PeoplePerception/JustLeft", "React")
         memory.unsubscribeToEvent("WordRecognized", "React")
@@ -129,7 +141,7 @@ def main():
     my_broker = ALBroker("myBroker",
                          "0.0.0.0",  # listen to anyone
                          0,  # find a free port and use it
-                         sys.argv[1],  # parent broker IP
+                         args.robot_ip,  # parent broker IP
                          9559)  # parent broker port
 
     # React *MUST* be a global variable and the same name *MUST* be passed as
@@ -141,11 +153,12 @@ def main():
         while True:  # keeping broker alive
             time.sleep(1)
     except KeyboardInterrupt:
-        print
-        print "Interrupted by user, shutting down"
+        print("Interrupted by user, shutting down")
         React.stop_all()
         my_broker.shutdown()
         sys.exit(0)
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":

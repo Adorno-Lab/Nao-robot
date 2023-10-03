@@ -3,10 +3,10 @@ from naoqi import ALProxy
 import math
 import argparse
 
-# Command line arguments.
-parser = argparse.ArgumentParser(description='First steps programming NAO. '
-                                             'Check the tutorial on '
-                                             'https://github.com/Adorno-Lab/Nao-robot/wiki/First-steps-programming-NAO-(Python-and-Ubuntu)')
+# Command line argument:
+parser = argparse.ArgumentParser(
+    description='First steps programming NAO. Check the tutorial on '
+                'https://github.com/Adorno-Lab/Nao-robot/wiki/First-steps-programming-NAO-(Python-and-Ubuntu)')
 parser.add_argument('robot_ip', type=str,
                     help='the IP address of the robot')
 args = parser.parse_args()
@@ -20,11 +20,11 @@ try:
     #   ip: the ip of the robot
     #   port: the port on which NAOqi listens (9559 by default)
 
-    # ------- Making NAO speak:
+    # ======== MAKING NAO SPEAK ===============================================
     tts = ALProxy("ALTextToSpeech", robot_ip, 9559)
     tts.say("Hello, world!")
 
-    # ------- Making NAO move:
+    # ======== MAKING NAO MOVE ================================================
     motion = ALProxy("ALMotion", robot_ip, 9559)
     # The robot will not move unless you set the stiffness of the joints to
     # something that is not 0.
@@ -45,7 +45,7 @@ try:
     # We use the id from the post usage as parameter for the WAIT method.
     motion.wait(id_motion, 0)
 
-    # ------- Making NAO move and speak at the same time:
+    # ========  MAKING NAO MOVE AND SPEAK AT THE SAME TIME ====================
     # We also use the POST attribute to call long methods in the background.
     motion.post.moveTo(0.1, 0, 0)
     tts.say("I'm walking and saying a long sentence at the same time")
