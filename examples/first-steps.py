@@ -1,19 +1,14 @@
 #!/usr/bin/env python2.7
-
-# Check the tutorial "First steps programming NAO (Python and Ubuntu)" on
-# https://github.com/Adorno-Lab/Nao-robot/wiki/First-steps-programming-NAO-(Python-and-Ubuntu)
-
-# To execute this script, run on a terminal:
-#   $ python2.7 first-steps.py "<robot-ip-address>"
-
 from naoqi import ALProxy
 import math
 import argparse
 
-parser = argparse.ArgumentParser(description='First steps programming NAO. Check the tutorial on '
-                                             'https://github.com/Adorno-Lab/Nao-robot/wiki/First-steps-programming-NAO-'
-                                             '(Python-and-Ubuntu)')
-parser.add_argument('robot_ip', type=str, help='the IP address of the robot')
+# Command line arguments.
+parser = argparse.ArgumentParser(description='First steps programming NAO. '
+                                             'Check the tutorial on '
+                                             'https://github.com/Adorno-Lab/Nao-robot/wiki/First-steps-programming-NAO-(Python-and-Ubuntu)')
+parser.add_argument('robot_ip', type=str,
+                    help='the IP address of the robot')
 args = parser.parse_args()
 
 try:
@@ -36,17 +31,18 @@ try:
     motion.setStiffnesses("Body", 1.0)
     motion.moveInit()  # to put the robot in a correct position first
 
-    # The method moveTo(x, y, theta) moves the robot to a given pose in the ground
-    # plane, relative to the robot frame, where
+    # The method moveTo(x, y, theta) moves the robot to a given pose in the
+    # ground plane, relative to the robot frame, where
     #   x: distance along the X axis (front) in meters
     #   y: distance along the Y axis (left) in meters
     #   theta: rotation around the Z axis (up) in radians.
     # Every proxy you create has an attribute named POST.
-    # We will call the method moveTo using the POST attribute so we can wait until
-    # it finishes before continuing. But it could have been only motion.moveTo().
+    # We will call the method moveTo using the POST attribute, so we can wait
+    # until it finishes before continuing. But it could have been only
+    # motion.moveTo().
     id_motion = motion.post.moveTo(0.3, 0, math.pi/3)
 
-    # We use the id returned by the post usage as parameter for the WAIT method.
+    # We use the id from the post usage as parameter for the WAIT method.
     motion.wait(id_motion, 0)
 
     # ------- Making NAO move and speak at the same time:
