@@ -6,23 +6,8 @@ import time
 import math
 import argparse
 
-# Command line arguments:
-parser = argparse.ArgumentParser(
-    description='Example of cartesian control of the robot\'s arms and head. '
-                'Check the tutorial on '
-                'https://github.com/Adorno-Lab/Nao-robot/wiki/Making-NAO-move')
-parser.add_argument('robot_ip', type=str,
-                    help='the IP address of the robot')
-parser.add_argument('-method', type=int, default=1,
-                    help='to choose the cartesian method to be used: '
-                         '"1" (default) to use positionInterpolations() ,'
-                         '"2" to use transformInterpolations(), '
-                         '"3" to use setPositions(), '
-                         'and "4" to use setTransforms()')
-args = parser.parse_args()
 
-
-def main():
+def main(args):
     try:
         motion_proxy = ALProxy("ALMotion", args.robot_ip, 9559)
         posture_proxy = ALProxy("ALRobotPosture", args.robot_ip, 9559)
@@ -316,4 +301,19 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # Command line arguments:
+    parser = argparse.ArgumentParser(
+        description='Example of cartesian control of the robot\'s arms and '
+                    'head. Check the tutorial on https://github.com/Adorno-Lab/'
+                    'Nao-robot/wiki/Making-NAO-move')
+    parser.add_argument('robot_ip', type=str,
+                        help='the IP address of the robot')
+    parser.add_argument('-method', type=int, default=1,
+                        help='to choose the cartesian method to be used: '
+                             '"1" (default) to use positionInterpolations() ,'
+                             '"2" to use transformInterpolations(), '
+                             '"3" to use setPositions(), '
+                             'and "4" to use setTransforms()')
+    args = parser.parse_args()
+
+    main(args)

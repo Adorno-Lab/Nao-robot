@@ -6,26 +6,8 @@ import time
 import math
 import argparse
 
-# Command line arguments:
-parser = argparse.ArgumentParser(
-    description='Example of joint control of the robot\'s arms, head, and '
-                'hands. Check the tutorial on '
-                'https://github.com/Adorno-Lab/Nao-robot/wiki/Making-NAO-move')
-parser.add_argument('robot_ip', type=str,
-                    help='the IP address of the robot')
-parser.add_argument('-method', type=int, default=1,
-                    help='to choose the joint control method to be used: '
-                         '"1" (default) to use angleInterpolation() ,'
-                         '"2" to use angleInterpolationWithSpeed(), '
-                         '"3" to use setAngles(), '
-                         'and "4" to use changeAngles()')
-parser.add_argument('-hand', type=int, default=0,
-                    help='to indicate if the robot should open and close its '
-                         'hands (1) or not (0) (default).')
-args = parser.parse_args()
 
-
-def main():
+def main(args):
     try:
         motion_proxy = ALProxy("ALMotion", args.robot_ip, 9559)
         posture_proxy = ALProxy("ALRobotPosture", args.robot_ip, 9559)
@@ -225,4 +207,22 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # Command line arguments:
+    parser = argparse.ArgumentParser(
+        description='Example of joint control of the robot\'s arms, head, and '
+                    'hands. Check the tutorial on https://github.com/'
+                    'Adorno-Lab/Nao-robot/wiki/Making-NAO-move')
+    parser.add_argument('robot_ip', type=str,
+                        help='the IP address of the robot')
+    parser.add_argument('-method', type=int, default=1,
+                        help='to choose the joint control method to be used: '
+                             '"1" (default) to use angleInterpolation() ,'
+                             '"2" to use angleInterpolationWithSpeed(), '
+                             '"3" to use setAngles(), '
+                             'and "4" to use changeAngles()')
+    parser.add_argument('-hand', type=int, default=0,
+                        help='to indicate if the robot should open and close '
+                             'its hands (1) or not (0) (default).')
+    args = parser.parse_args()
+
+    main(args)
