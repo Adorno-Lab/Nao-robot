@@ -21,8 +21,8 @@ args = parser.parse_args()
 
 # ======== MAKING NAO SPEAK ============================================
 try:
-    ttsProxy = ALProxy("ALTextToSpeech", args.robot_ip, args.port)
-    ttsProxy.say("Hello, world!")
+    TTSProxy = ALProxy("ALTextToSpeech", args.robot_ip, args.port)
+    TTSProxy.say("Hello, world!")
 except KeyboardInterrupt:
     pass
 except Exception as e:
@@ -61,7 +61,7 @@ try:
     # We also use the POST attribute to call long methods in the
     # background.
     motionProxy.post.moveTo(0.1, 0, 0)
-    ttsProxy.say("I'm walking and saying a long sentence at the same time")
+    TTSProxy.say("I'm walking and saying a long sentence at the same time")
 except KeyboardInterrupt:
     pass
 except Exception as e:
