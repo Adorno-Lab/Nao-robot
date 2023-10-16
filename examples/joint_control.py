@@ -35,10 +35,14 @@ def main(args):
     # method that receives absolute or relative angles and relative
     # times as parameters. If there is a commandline choice of method to
     # be used, it overwrites the default.
-    #   method 1: angleInterpolation() - blocking, absolute or relative angles, relative times
-    #   method 2: angleInterpolationWithSpeed() - blocking, absolute angles, speed fraction
-    #   method 3: setAngles() - non-blocking, absolute angles, speed fraction
-    #   method 4: changeAngles() - non-blocking, relative angles, speed fraction
+    #   method 1: angleInterpolation() - blocking, absolute or relative
+    #                                    angles, relative times
+    #   method 2: angleInterpolationWithSpeed() - blocking, absolute
+    #                                             angles, speed fraction
+    #   method 3: setAngles() - non-blocking, absolute angles, speed
+    #                           fraction
+    #   method 4: changeAngles() - non-blocking, relative angles,
+    #                              speed fraction
 
     #  ======== USING angleInterpolation() METHOD ======================
     # Method call:
@@ -61,8 +65,12 @@ def main(args):
             # The angle values were obtained using the getAngles method
             # in the cartesian_control.py script.
             # The target vector should follow the joints order:
-            #   [ShoulderPitch, ShoulderRoll, ElbowYaw, ElbowRoll,
-            #   WristYaw, Hand]
+            #   [ShoulderPitch,
+            #    ShoulderRoll,
+            #    ElbowYaw,
+            #    ElbowRoll,
+            #    WristYaw,
+            #    Hand]
             if arm == "LArm":
                 target = [[1.6154522895812988, initial_angles[0]],
                           [0.3719860911369324, initial_angles[1]],
@@ -217,7 +225,7 @@ def main(args):
     #       <fraction of maximum speed to use>
     #       )
     if args.method == 4:
-        # ================= Making the head move ===========================
+        # ================= Making the head move =======================
         targets = [30 * math.pi / 180, -30 * math.pi / 180,
                    -30 * math.pi / 180, 30 * math.pi / 180]
 
@@ -231,9 +239,10 @@ def main(args):
         except Exception as e:
             print(e)
 
-    # ======== MOVING HANDS ================================================
+    # ======== MOVING HANDS ============================================
     if args.hand == 1:
-        # Opening hands using the argument POST, so they can open together:
+        # Opening hands using the argument POST, so they can open
+        # together:
         try:
             motion_proxy.post.openHand("LHand")
             motion_proxy.post.openHand("RHand")

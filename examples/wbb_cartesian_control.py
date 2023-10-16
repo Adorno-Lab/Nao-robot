@@ -49,10 +49,10 @@ def main(args):
         # position. The recommended minimum period between two
         # successive commands is 0.2 seconds.
         # - Feasible arm positions (according to an Aldebaran script):
-        #       x axis: [0.0, 0.12] meters
-        #       y axis LArm: [-0.05, 0.10] meters
-        #       y axis RArm: [-0.10, 0.05] meters
-        #       z axis: [-0.10, 0.10] meters
+        #       x-axis: [0.0, 0.12] meters
+        #       y-axis LArm: [-0.05, 0.10] meters
+        #       y-axis RArm: [-0.10, 0.05] meters
+        #       z-axis: [-0.10, 0.10] meters
         if arm == "LArm":
             target = [0.06, 0.05, 0.3]
         else:

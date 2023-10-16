@@ -12,7 +12,7 @@ react = None  # instance of the module that will be created
 
 # Typically, a module is a class within a library. We will create one
 # to react to some events.
-class reactModule(ALModule):
+class ReactModule(ALModule):
     """A module for the robot to react to some events."""
 
     def __init__(self, name):
@@ -40,10 +40,10 @@ class reactModule(ALModule):
         # Add a pause before setting the vocabulary:
         self.speechRecognitionProxy.pause(True)
         self.speechRecognitionProxy.setLanguage("English")
-        # Define the list of words for the vocabulary:
+        # Define the list of words for the vocabulary. The second
+        # parameters of setVocabulary() is to enable or disable word
+        # spotting:
         vocabulary = ["human"]
-        # The second parameters of setVocabulary() is to enable or
-        # disable word spotting:
         self.speechRecognitionProxy.setVocabulary(vocabulary, False)
         # Enable the recognition again:
         self.speechRecognitionProxy.pause(False)
@@ -128,10 +128,10 @@ def main(args):
     # the same name *MUST* be passed as parameter for the class
     # constructor.
     global react
-    react = reactModule("react")
+    react = ReactModule("react")
 
-    # Wake up the robot
     motionProxy = ALProxy("ALMotion", args.robot_ip, args.port)
+    # Wake up the robot
     motionProxy.wakeUp()
 
     try:

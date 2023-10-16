@@ -9,7 +9,8 @@ parser = argparse.ArgumentParser(
     description='First steps programming NAO. Check the tutorial on '
                 'https://github.com/Adorno-Lab/Nao-robot/wiki/First-steps-'
                 'programming-NAO-(Python-and-Ubuntu)')
-parser.add_argument('robot_ip', type=str, help='the IP address of the robot')
+parser.add_argument('robot_ip', type=str,
+                    help='the IP address of the robot')
 parser.add_argument('-port', type=str, default=9559,
                     help='the port on which NAOqi listens (9559 by default)')
 args = parser.parse_args()
@@ -20,8 +21,8 @@ args = parser.parse_args()
 #   port: the port on which NAOqi listens (9559 by default)
 
 # ======== MAKING NAO SPEAK ============================================
+TTSProxy = ALProxy("ALTextToSpeech", args.robot_ip, args.port)
 try:
-    TTSProxy = ALProxy("ALTextToSpeech", args.robot_ip, args.port)
     TTSProxy.say("Hello, world!")
 except KeyboardInterrupt:
     pass
@@ -30,14 +31,14 @@ except Exception as e:
     print(e)
 
 # ======== MAKING NAO MOVE =============================================
-try:
-    motionProxy = ALProxy("ALMotion", args.robot_ip, args.port)
-    # The robot will not move unless you set the stiffness of the joints
-    # to something that is not 0:
-    motionProxy.setStiffnesses("Body", 1.0)
-    # Put the robot in a correct position first:
-    motionProxy.moveInit()
+motionProxy = ALProxy("ALMotion", args.robot_ip, args.port)
+# The robot will not move unless you set the stiffness of the joints
+# to something that is not 0:
+motionProxy.setStiffnesses("Body", 1.0)
+# Put the robot in a correct position first:
+motionProxy.moveInit()
 
+try:
     # The method moveTo(x, y, theta) moves the robot to a given pose in
     # the ground plane, relative to the robot frame, where
     #   x: distance along the X axis (front) in meters
