@@ -56,14 +56,12 @@ def main(args):
         # ================= Making the arms move =======================
         arms = ["LArm", "RArm"]
         for arm in arms:
-            # The getAngles method returns the joints or chain angles.
+            # The getAngles() method returns the joints or chain angles.
             # The second parameter sets if the sensors will be used to
             # determine the angles.
             initial_angles = motion_proxy.getAngles(arm, False)
 
             # Setting the target angles of each joint in the arm chain.
-            # The angle values were obtained using the getAngles method
-            # in the cartesian_control.py script.
             # The target vector should follow the joints order:
             #   [ShoulderPitch,
             #    ShoulderRoll,
@@ -88,7 +86,7 @@ def main(args):
 
             times = [[3, 6]]*len(initial_angles)
 
-            # The angleInterpolation method is a blocking call.
+            # The angleInterpolation() method is a blocking call.
             try:
                 motion_proxy.angleInterpolation(arm, target, times, True)
             except KeyboardInterrupt:
@@ -137,7 +135,7 @@ def main(args):
                           0.45257824659347534,
                           0.25]
 
-            # The angleInterpolationWithSpeed method does not accept
+            # The angleInterpolationWithSpeed() method does not accept
             # multiple target angles in one single method call, so we
             # use a FOR loop, but since it is a blocking call we do not
             # need time.sleep().
@@ -192,7 +190,7 @@ def main(args):
                           0.45257824659347534,
                           0.25]
 
-            # The setAngles method is a non-blocking call.
+            # The setAngles() method is a non-blocking call.
             targets = [target, initial_angles]
             try:
                 for target in targets:
@@ -229,7 +227,7 @@ def main(args):
         targets = [30 * math.pi / 180, -30 * math.pi / 180,
                    -30 * math.pi / 180, 30 * math.pi / 180]
 
-        # The changeAngles method is a non-blocking call.
+        # The changeAngles() method is a non-blocking call.
         try:
             for target in targets:
                 motion_proxy.changeAngles("HeadYaw", target, 0.25)
@@ -251,7 +249,7 @@ def main(args):
         except Exception as e:
             print(e)
 
-        time.sleep(2)  # waiting the movement to finish
+        time.sleep(2)  # waiting for the movement to finish
 
         # Closing hands:
         try:
@@ -262,7 +260,7 @@ def main(args):
         except Exception as e:
             print(e)
 
-        time.sleep(1)  # waiting the movement to finish
+        time.sleep(1)  # waiting for the movement to finish
 
     # The rest() method sends the robot to a relaxed and safe position
     # and sets its motors off. For NAO H25, if the robot is standing, it

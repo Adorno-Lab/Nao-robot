@@ -58,7 +58,7 @@ def main(args):
         # ================= Making the arms move =======================
         arms = ["LArm", "RArm"]
         for arm in arms:
-            # The getPosition method returns a vector containing the
+            # The getPosition() method returns a vector containing the
             # pose (x, y, z, wx, wy, wz) of any joint, chain, or sensor
             # in meters and radians, relative to the chosen frame. The
             # last parameter sets if the sensors will be used to
@@ -132,7 +132,7 @@ def main(args):
         # ================= Making the arms move =======================
         arms = ["LArm", "RArm"]
         for arm in arms:
-            # The getTransform method returns a homogeneous
+            # The getTransform() method returns a homogeneous
             # transformation matrix (HTM) to any joint, chain, or sensor
             # relative to the chosen frame. The last parameter sets if
             # the sensors will be used to determine the transformation.
@@ -158,7 +158,7 @@ def main(args):
                           initial_transform[8], initial_transform[9], initial_transform[10], 0.3,
                           0, 0, 0, 1]
 
-            # The transformInterpolations method is a blocking call.
+            # The transformInterpolations() method is a blocking call.
             try:
                 motion_proxy.transformInterpolations(
                     arm, FRAME_ROBOT, [target, initial_transform],
@@ -222,7 +222,7 @@ def main(args):
             r_wy = 16
             r_wz = 32
 
-            # The setPositions method is a non-blocking call.
+            # The setPositions() method is a non-blocking call.
             try:
                 motion_proxy.setPositions(arm, FRAME_ROBOT, target, 0.25,
                                           t_x + t_y + t_z)
@@ -268,10 +268,6 @@ def main(args):
         # ================= Making the arms move =======================
         arms = ["LArm", "RArm"]
         for arm in arms:
-            # The getTransform method returns a homogeneous
-            # transformation matrix (HTM) to any joint, chain, or sensor
-            # relative to the chosen frame. The last parameter sets if
-            # the sensors will be used to determine the transformation.
             initial_transform = motion_proxy.getTransform(arm, FRAME_ROBOT,
                                                           False)
 
@@ -284,23 +280,17 @@ def main(args):
 
             # Defining the HTM with different translation only:
             if arm == "LArm":
-                target = [initial_transform[0], initial_transform[1],
-                          initial_transform[2], 0.06,
-                          initial_transform[4], initial_transform[5],
-                          initial_transform[6], 0.05,
-                          initial_transform[8], initial_transform[9],
-                          initial_transform[10], 0.3,
+                target = [initial_transform[0], initial_transform[1], initial_transform[2], 0.06,
+                          initial_transform[4], initial_transform[5], initial_transform[6], 0.05,
+                          initial_transform[8], initial_transform[9], initial_transform[10], 0.3,
                           0, 0, 0, 1]
             else:
-                target = [initial_transform[0], initial_transform[1],
-                          initial_transform[2], 0.06,
-                          initial_transform[4], initial_transform[5],
-                          initial_transform[6], -0.05,
-                          initial_transform[8], initial_transform[9],
-                          initial_transform[10], 0.3,
+                target = [initial_transform[0], initial_transform[1], initial_transform[2], 0.06,
+                          initial_transform[4], initial_transform[5], initial_transform[6], -0.05,
+                          initial_transform[8], initial_transform[9], initial_transform[10], 0.3,
                           0, 0, 0, 1]
 
-            # The setTransforms method is a non-blocking call.
+            # The setTransforms() method is a non-blocking call.
             try:
                 motion_proxy.setTransforms(arm, FRAME_ROBOT, target, 0.5,
                                            t_x + t_y + t_z)
