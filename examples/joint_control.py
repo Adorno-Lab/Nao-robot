@@ -223,14 +223,52 @@ def main(args):
     #       <fraction of maximum speed to use>
     #       )
     if args.method == 4:
+        # ================= Making the arms move =======================
+        arms = ["LArm", "RArm"]
+        for arm in arms:
+            initial_angles = motion_proxy.getAngles(arm, False)
+
+            # We subtract the current angle to get to the desired final
+            # orientation.
+            if arm == "LArm":
+                target1 = [1.6154522895812988 - initial_angles[0],
+                           0.3719860911369324 - initial_angles[1],
+                           -0.7981292605400085 - initial_angles[2],
+                           -1.5378968715667725 - initial_angles[3],
+                           -0.4528430104255676 - initial_angles[4],
+                           0.25 - initial_angles[5]]
+            else:
+                target1 = [1.6155904531478882 - initial_angles[0],
+                           -0.37190526723861694 - initial_angles[1],
+                           0.7983359098434448 - initial_angles[2],
+                           1.537906289100647 - initial_angles[3],
+                           0.45257824659347534 - initial_angles[4],
+                           0.25 - initial_angles[5]]
+
+            # To return the joints to the previous orientations, we
+            # invert the angle to be changed.
+            target2 = []
+            for t in target1:
+                target2.append(-t)
+
+            # The changeAngles() method is a non-blocking call.
+            targets = [target1, target2]
+            try:
+                for target in targets:
+                    motion_proxy.changeAngles(arm, target, 0.1)
+                    time.sleep(2)
+            except KeyboardInterrupt:
+                pass
+            except Exception as e:
+                print(e)
+
         # ================= Making the head move =======================
         targets = [30 * math.pi / 180, -30 * math.pi / 180,
                    -30 * math.pi / 180, 30 * math.pi / 180]
 
-        # The changeAngles() method is a non-blocking call.
         try:
             for target in targets:
-                motion_proxy.changeAngles("HeadYaw", target, 0.25)
+                motion_proxy.changeAngles("HeadYaw", target, 0.1)
                 time.sleep(3)
         except KeyboardInterrupt:
             pass
