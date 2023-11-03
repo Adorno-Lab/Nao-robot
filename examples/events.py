@@ -21,34 +21,34 @@ class ReactModule(ALModule):
         ALModule.__init__(self, name)
 
         # Create a proxy for each necessary module.
-        self.TTSProxy = ALProxy("ALTextToSpeech")
-        self.memoryProxy = ALProxy("ALMemory")
-        self.speechRecognitionProxy = ALProxy("ALSpeechRecognition")
+        self.TTS_proxy = ALProxy("ALTextToSpeech")
+        self.memory_proxy = ALProxy("ALMemory")
+        self.speech_recognition_proxy = ALProxy("ALSpeechRecognition")
 
         # Subscribe to the desired events using
-        # memoryProxy.subscribeToEvent(<event>,
-        #                              <callback_module>,
-        #                              <callback_method_from_module>)
-        self.memoryProxy.subscribeToEvent("PeoplePerception/JustArrived",
-                                          "react", "when_arrive")
-        self.memoryProxy.subscribeToEvent("PeoplePerception/JustLeft", "react",
-                                          "when_leave")
-        self.memoryProxy.subscribeToEvent("WordRecognized", "react",
-                                          "when_speech_recognized")
+        # memory_proxy.subscribeToEvent(<event>,
+        #                               <callback_module>,
+        #                               <callback_method_from_module>)
+        self.memory_proxy.subscribeToEvent("PeoplePerception/JustArrived",
+                                           "react", "when_arrive")
+        self.memory_proxy.subscribeToEvent("PeoplePerception/JustLeft", "react",
+                                           "when_leave")
+        self.memory_proxy.subscribeToEvent("WordRecognized", "react",
+                                           "when_speech_recognized")
 
         # Set up the speech recognition proxy.
         # Add a pause before setting the vocabulary:
-        self.speechRecognitionProxy.pause(True)
-        self.speechRecognitionProxy.setLanguage("English")
+        self.speech_recognition_proxy.pause(True)
+        self.speech_recognition_proxy.setLanguage("English")
         # Define the list of words for the vocabulary. The second
         # parameters of setVocabulary() is to enable or disable word
         # spotting:
         vocabulary = ["human"]
-        self.speechRecognitionProxy.setVocabulary(vocabulary, False)
+        self.speech_recognition_proxy.setVocabulary(vocabulary, False)
         # Enable the recognition again:
-        self.speechRecognitionProxy.pause(False)
+        self.speech_recognition_proxy.pause(False)
         # Start writing in ALMemory's "WordRecognized"
-        self.speechRecognitionProxy.subscribe("SRSubscriber")
+        self.speech_recognition_proxy.subscribe("SRSubscriber")
 
         # Define the minimum probability for a word to be considered
         # recognized:
@@ -68,26 +68,26 @@ class ReactModule(ALModule):
 
     def when_arrive(self, *_args):
         """Callback method to be called every time a person arrives."""
-        self.memoryProxy.unsubscribeToEvent("PeoplePerception/JustArrived",
-                                            "react")
-        self.TTSProxy.say("Hello, you")
-        self.memoryProxy.subscribeToEvent("PeoplePerception/JustArrived",
-                                          "react", "when_arrive")
+        self.memory_proxy.unsubscribeToEvent("PeoplePerception/JustArrived",
+                                             "react")
+        self.TTS_proxy.say("Hello, you")
+        self.memory_proxy.subscribeToEvent("PeoplePerception/JustArrived",
+                                           "react", "when_arrive")
 
     def when_leave(self, *_args):
         """Callback method to be called every time a person leaves."""
-        self.memoryProxy.unsubscribeToEvent("PeoplePerception/JustLeft",
-                                            "react")
-        self.TTSProxy.say("See you")
-        self.memoryProxy.subscribeToEvent("PeoplePerception/JustLeft","react",
-                                          "when_leave")
+        self.memory_proxy.unsubscribeToEvent("PeoplePerception/JustLeft",
+                                             "react")
+        self.TTS_proxy.say("See you")
+        self.memory_proxy.subscribeToEvent("PeoplePerception/JustLeft","react",
+                                           "when_leave")
 
     def when_speech_recognized(self, *_args):
         """Callback method to be called every time speech is recognized."""
-        self.memoryProxy.unsubscribeToEvent("WordRecognized", "react")
+        self.memory_proxy.unsubscribeToEvent("WordRecognized", "react")
 
         # Get WordRecognized data from memory:
-        speech_data = self.memoryProxy.getData("WordRecognized")
+        speech_data = self.memory_proxy.getData("WordRecognized")
         # The WordRecognized key is organized as
         # [ph_1, pb_1, ..., ph_n, pb_n], where ph_i is one phrase from
         # the vocabulary and pb_i is the estimated probability that ph_i
@@ -96,19 +96,19 @@ class ReactModule(ALModule):
         # Here, if the person says "human", the robot says "robot":
         if (speech_data[0] == "human" and
                 speech_data[1] > self.word_probability):
-            self.TTSProxy.say("robot")
+            self.TTS_proxy.say("robot")
 
-        self.memoryProxy.subscribeToEvent("WordRecognized", "react",
-                                          "when_speech_recognized")
+        self.memory_proxy.subscribeToEvent("WordRecognized", "react",
+                                           "when_speech_recognized")
 
     def stop_all(self):
         """Stop the recognition of the events."""
-        self.memoryProxy.unsubscribeToEvent("PeoplePerception/JustArrived",
-                                            "react")
-        self.memoryProxy.unsubscribeToEvent("PeoplePerception/JustLeft",
-                                            "react")
-        self.memoryProxy.unsubscribeToEvent("WordRecognized", "react")
-        self.speechRecognitionProxy.pause(True)
+        self.memory_proxy.unsubscribeToEvent("PeoplePerception/JustArrived",
+                                             "react")
+        self.memory_proxy.unsubscribeToEvent("PeoplePerception/JustLeft",
+                                             "react")
+        self.memory_proxy.unsubscribeToEvent("WordRecognized", "react")
+        self.speech_recognition_proxy.pause(True)
 
 
 def main(args):
@@ -118,11 +118,11 @@ def main(args):
     # subscribe to other modules. The broker must stay alive while the
     # program exists. Keeping the broker alive allows you to create
     # proxies without specifying an IP or port.
-    myBroker = ALBroker("myBroker",
-                        "0.0.0.0",  # listen to anyone
-                        0,  # find a free port and use it
-                        args.robot_ip,  # parent broker IP
-                        args.port)  # parent broker port
+    my_broker = ALBroker("my_broker",
+                         "0.0.0.0",  # listen to anyone
+                         0,  # find a free port and use it
+                         args.robot_ip,  # parent broker IP
+                         args.port)  # parent broker port
 
     # The object of the module created *MUST* be a global variable and
     # the same name *MUST* be passed as parameter for the class
@@ -130,9 +130,9 @@ def main(args):
     global react
     react = ReactModule("react")
 
-    motionProxy = ALProxy("ALMotion", args.robot_ip, args.port)
+    motion_proxy = ALProxy("ALMotion", args.robot_ip, args.port)
     # Wake up the robot
-    motionProxy.wakeUp()
+    motion_proxy.wakeUp()
 
     try:
         while True:  # keeping broker alive
@@ -140,7 +140,7 @@ def main(args):
     except KeyboardInterrupt:
         print("Interrupted by user, shutting down")
         react.stop_all()
-        myBroker.shutdown()
+        my_broker.shutdown()
         sys.exit(0)
     except Exception as e:
         print(e)

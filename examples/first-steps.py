@@ -21,9 +21,9 @@ args = parser.parse_args()
 #   port: the port on which NAOqi listens (9559 by default)
 
 # ======== MAKING NAO SPEAK ============================================
-TTSProxy = ALProxy("ALTextToSpeech", args.robot_ip, args.port)
+TTS_proxy = ALProxy("ALTextToSpeech", args.robot_ip, args.port)
 try:
-    TTSProxy.say("Hello, world!")
+    TTS_proxy.say("Hello, world!")
 except KeyboardInterrupt:
     pass
 except Exception as e:
@@ -31,12 +31,12 @@ except Exception as e:
     print(e)
 
 # ======== MAKING NAO MOVE =============================================
-motionProxy = ALProxy("ALMotion", args.robot_ip, args.port)
+motion_proxy = ALProxy("ALMotion", args.robot_ip, args.port)
 # The robot will not move unless you set the stiffness of the joints
 # to something that is not 0:
-motionProxy.setStiffnesses("Body", 1.0)
+motion_proxy.setStiffnesses("Body", 1.0)
 # Put the robot in a correct position first:
-motionProxy.moveInit()
+motion_proxy.moveInit()
 
 try:
     # The method moveTo(x, y, theta) moves the robot to a given pose in
@@ -46,11 +46,11 @@ try:
     #   theta: rotation around the Z axis (up) in radians.
     # Every proxy you create has an optional attribute named POST. We
     # will use it, so we can wait until it finishes before continuing.
-    id_motion = motionProxy.post.moveTo(0.3, 0, math.pi/3)
+    id_motion = motion_proxy.post.moveTo(0.3, 0, math.pi/3)
 
     # We use the id from the POST usage as the parameter for the WAIT
     # method.
-    motionProxy.wait(id_motion, 0)
+    motion_proxy.wait(id_motion, 0)
 except KeyboardInterrupt:
     pass
 except Exception as e:
@@ -61,8 +61,8 @@ except Exception as e:
 try:
     # We also use the POST attribute to call long methods in the
     # background.
-    motionProxy.post.moveTo(0.1, 0, 0)
-    TTSProxy.say("I'm walking and saying a long sentence at the same time")
+    motion_proxy.post.moveTo(0.1, 0, 0)
+    TTS_proxy.say("I'm walking and saying a long sentence at the same time")
 except KeyboardInterrupt:
     pass
 except Exception as e:
