@@ -2,6 +2,7 @@
 
 import argparse
 import math
+import sys
 
 from naoqi import ALProxy
 
@@ -12,7 +13,11 @@ def main(args):
 
     motion_proxy.wakeUp()  # wake up the robot
     awareness_proxy.stopAwareness()  # stop basic awareness
-    motion_proxy.moveInit()  # put the robot in a good initial position
+
+    # Before sending any walk commands to the robot, use the moveInit()
+    # method to put it in a safe initial position, with both its feet
+    # flat on the ground.
+    motion_proxy.moveInit()
 
     # There are three high level methods to control the robot walk.
     # By default, the script uses moveTo(), a blocking method that
@@ -41,23 +46,27 @@ def main(args):
             motion_proxy.moveTo(0.5, -0.5, -math.pi / 2)
             motion_proxy.moveTo(0, 0, -math.pi / 2)
         except KeyboardInterrupt:
-            pass
+            motion_proxy.moveToward(0, 0, 0)
+            motion_proxy.waitUntilMoveIsFinished()
+            motion_proxy.rest()
+            sys.exit(0)
         except Exception as e:
             print(e)
 
     #  ======== USING move() METHOD ====================================
     # Method call:
-    #   motion_proxy.move(<velocity along x>,
-    #                     <velocity along y>,
-    #                     <velocity around z>)
+    #   motion_proxy.move(<linear velocity along x>,
+    #                     <linear velocity along y>,
+    #                     <angular velocity around z>)
     if args.method == 2:
-        # The move() method accepts as arguments the velocities along x
-        # and y axes (in meters per second) and around z axis (in
-        # radians per second), relative to FRAME_ROBOT. It is a
-        # non-blocking call, so the most recent command overwrites the
-        # previous one.
+        # The move() method accepts as arguments the linear velocities
+        # along x and y axes (in meters per second) and angular velocity
+        # around z axis (in radians per second), relative to
+        # FRAME_ROBOT. It is a non-blocking call, so the most recent
+        # command overwrites the previous one.
 
-        # Setting the final poses:
+        # Setting the target poses (it is the same sequence used with
+        # the moveTo method):
         x_target = [0.5, 0, 0.5, 0]
         y_target = [-0.5, 0, -0.5, 0]
         theta_target = [-math.pi / 2, -math.pi / 2,
@@ -65,13 +74,17 @@ def main(args):
 
         # We will make the robot reduce its velocity as it gets close to
         # the target pose, using a while loop and a stopping condition.
+        # The stopping condition is going to be the target pose, so we
+        # will define tolerance for the robot desired position and
+        # orientation.
 
-        # Set the tolerance to the target pose:
-        error_position = 0.05  # along x and y axes
-        error_orientation = 5 * math.pi / 180  # around z axis
+        # Setting tolerances to the target pose:
+        error_position_x = 0.2
+        error_position_y = 0.2
+        error_orientation = 30 * math.pi / 180
 
-        # Setting the initial velocities (m/s and rad/s):
-        time_periods = [5, 5, 5, 5]
+        # Setting the initial velocities (in m/s and rad/s):
+        time_periods = [15, 15, 15, 15]  # the time period of each stage
         x_init_vel = [m / s for m, s in zip(x_target, time_periods)]
         y_init_vel = [m / s for m, s in zip(y_target, time_periods)]
         theta_init_vel = [rad / s for rad, s in
@@ -80,6 +93,7 @@ def main(args):
         for i in range(0, len(x_target)):
             # Getting initial robot pose relative to FRAME_WORLD:
             initial_pose = motion_proxy.getRobotPosition(False)
+
             while True:
                 # Getting current robot pose relative to FRAME_WORLD:
                 current_pose = motion_proxy.getRobotPosition(False)
@@ -89,33 +103,44 @@ def main(args):
                 delta_y = current_pose[1] - initial_pose[1]
                 delta_theta = current_pose[2] - initial_pose[2]
 
-                if (abs(delta_x) < error_position
-                        and abs(delta_y) < error_position
-                        and abs(delta_theta) < error_orientation):
-                    # If pose is inside the tolerance, send command to
-                    # stop the robot, setting its velocities to zero.
-                    motion_proxy.move(0, 0, 0)
-                    # Blocking the code until the movement is finished:
-                    motion_proxy.waitUntilMoveIsFinished()
-                    break
+                dist = math.sqrt(math.pow(delta_x,2) +
+                                 math.pow(delta_y,2))
+                target_dist = math.sqrt(math.pow(x_target[i],2) +
+                                        math.pow(y_target[i],2))
+                # If the position/orientation is inside the tolerance,
+                # set the respective velocity to zero. If not, the
+                # velocity will be a fraction of the initial value,
+                # calculated using the distances.
+                if abs(target_dist - dist) < error_position_x:
+                    x_vel = 0
+                    y_vel = 0
                 else:
-                    # If pose is not inside the tolerance, set the
-                    # velocities to a fraction of the initial values,
-                    # according to the distances.
-                    x_vel = x_init_vel * (x_target[i] - delta_x) / \
+                    x_vel = x_init_vel[i] * (x_target[i] - delta_x) / \
                             x_target[i]
-                    y_vel = y_init_vel * (y_target[i] - delta_y) / \
+                    y_vel = y_init_vel[i] * (y_target[i] - delta_y) / \
                             y_target[i]
-                    theta_vel = (theta_init_vel *
+                if abs(theta_target[i] - delta_theta) < error_orientation:
+                    theta_vel = 0
+                else:
+                    theta_vel = (theta_init_vel[i] *
                                  (theta_target[i] - delta_theta) /
                                  theta_target[i])
 
-                    try:
-                        motion_proxy.move(x_vel, y_vel, theta_vel)
-                    except KeyboardInterrupt:
-                        pass
-                    except Exception as e:
-                        print(e)
+                try:
+                    motion_proxy.move(x_vel, y_vel, theta_vel)
+                except KeyboardInterrupt:
+                    motion_proxy.stopMove()
+                    motion_proxy.waitUntilMoveIsFinished()
+                    motion_proxy.rest()
+                    sys.exit(0)
+                except Exception as e:
+                    print(e)
+
+                # Stopping condition:
+                if x_vel == 0 and y_vel == 0 and theta_vel == 0:
+                    # Blocking the code until the movement is finished:
+                    motion_proxy.waitUntilMoveIsFinished()
+                    break
 
     #  ======== USING moveToward() METHOD ==============================
     # Method call:
@@ -128,22 +153,25 @@ def main(args):
         # FRAME_ROBOT. It is a non-blocking call, so the most recent
         # command overwrites the previous one.
 
-        # Setting the final poses:
+        # Setting the target poses:
         x_target = [0.5, 0, 0.5, 0]
         y_target = [-0.5, 0, -0.5, 0]
         theta_target = [-math.pi / 2, -math.pi / 2,
                         -math.pi / 2, -math.pi / 2]
 
-        # Again, we will make the robot reduce its velocity as it gets
-        # close to the target pose, using a while loop.
+        # As we did with the move() command, we will again make the
+        # robot reduce its velocity as it gets close to the target pose,
+        # using a while loop and a stopping condition.
 
-        # Setting the tolerance to the target pose:
-        error_position = 0.05  # along x and y axes
-        error_orientation = 5 * math.pi / 180  # around z axis
+        # Setting tolerances to the target pose:
+        error_position_x = 0.05
+        error_position_y = 0.05
+        error_orientation = 5 * math.pi / 180
 
         for i in range(0, len(x_target)):
             # Getting initial robot pose relative to FRAME_WORLD:
             initial_pose = motion_proxy.getRobotPosition(False)
+
             while True:
                 # Getting current robot pose relative to FRAME_WORLD:
                 current_pose = motion_proxy.getRobotPosition(False)
@@ -153,29 +181,38 @@ def main(args):
                 delta_y = current_pose[1] - initial_pose[1]
                 delta_theta = current_pose[2] - initial_pose[2]
 
-                if (abs(delta_x) < error_position
-                        and abs(delta_y) < error_position
-                        and abs(delta_theta) < error_orientation):
-                    # If pose is inside the tolerance, send command to
-                    # stop the robot, setting its velocities to zero.
-                    motion_proxy.moveToward(0, 0, 0)
-                    # Blocking the code until the movement is finished:
-                    motion_proxy.waitUntilMoveIsFinished()
-                    break
+                # Again, until the robot is under the tolerance in all
+                # axes, the normalized velocity will be reduced using
+                # the distances.
+                if abs(delta_x) < error_position_x:
+                    x_vel = 0
                 else:
-                    # If pose is not inside the tolerance, set the
-                    # normalized velocities, according to the distances.
                     x_vel = (x_target[i] - delta_x) / x_target[i]
+                if abs(delta_y) < error_position_y:
+                    y_vel = 0
+                else:
                     y_vel = (y_target[i] - delta_y) / y_target[i]
+                if abs(delta_theta) < error_orientation:
+                    theta_vel = 0
+                else:
                     theta_vel = ((theta_target[i] - delta_theta) /
                                  theta_target[i])
 
-                    try:
-                        motion_proxy.moveToward(x_vel, y_vel, theta_vel)
-                    except KeyboardInterrupt:
-                        pass
-                    except Exception as e:
-                        print(e)
+                try:
+                    motion_proxy.moveToward(x_vel, y_vel, theta_vel)
+                except KeyboardInterrupt:
+                    motion_proxy.moveToward(0, 0, 0)
+                    motion_proxy.waitUntilMoveIsFinished()
+                    motion_proxy.rest()
+                    sys.exit(0)
+                except Exception as e:
+                    print(e)
+
+                # Stopping condition:
+                if x_vel == 0 and y_vel == 0 and theta_vel == 0:
+                    # Blocking the code until the movement is finished:
+                    motion_proxy.waitUntilMoveIsFinished()
+                    break
 
     motion_proxy.rest()
 
