@@ -1,5 +1,6 @@
-from math import pi
+from math import pi, cos, sin
 import numpy as np
+from dqrobotics import *
 from dqrobotics.robot_modeling import DQ_SerialManipulatorDH
 
 
@@ -36,7 +37,7 @@ class NaoRobot:
         self.dq_joint_prismatic = 1
 
 
-class NaoTopCamera(NaoRobot):
+class TopCamera(NaoRobot):
     """
     Class for the serial head chain, from torso to top camera.
     Joints: HeadYaw, HeadPitch
@@ -56,10 +57,27 @@ class NaoTopCamera(NaoRobot):
         DH_type = np.array([self.dq_joint_rotational] * 2)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
-        return DQ_SerialManipulatorDH(DH_matrix)
+        obj = DQ_SerialManipulatorDH(DH_matrix)
+
+        # Setting the base:
+        x_base = 1 + DQ.E * DQ([0, 0, self.neck_offset_z])
+        obj.set_reference_frame(x_base)
+
+        # Setting the end effector:
+        t_ee = 1 + DQ.E * (1/2) * DQ([self.top_camera_x, 0, self.top_camera_z])
+        angle = pi/2
+        axis = DQ.i
+        r_ee_1 = cos(angle/2) + axis * sin(angle/2)
+        angle = pi/2
+        axis = DQ.j
+        r_ee_2 = cos(angle/2) + axis * sin(angle/2)
+        x_ee = r_ee_1 * r_ee_2 * t_ee
+        obj.set_effector(x_ee)
+
+        return obj
 
 
-class NaoBottomCamera(NaoRobot):
+class BottomCamera(NaoRobot):
     """
     Class for the serial head chain, from torso to bottom camera.
     Joints: HeadYaw, HeadPitch
@@ -79,7 +97,26 @@ class NaoBottomCamera(NaoRobot):
         DH_type = np.array([self.dq_joint_rotational] * 2)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
-        return DQ_SerialManipulatorDH(DH_matrix)
+        obj = DQ_SerialManipulatorDH(DH_matrix)
+
+        # Setting the base:
+        x_base = 1 + DQ.E * (1/2) * DQ([0, 0, self.neck_offset_z])
+        obj.set_reference_frame(x_base)
+
+        # Setting the end effector:
+        t_ee = 1 + DQ.E * (1/2) * DQ([self.bottom_camera_x,
+                                      0,
+                                      self.bottom_camera_z])
+        angle = pi/2
+        axis = DQ.i
+        r_ee_1 = cos(angle/2) + axis * sin(angle/2)
+        angle = pi/2
+        axis = DQ.j
+        r_ee_2 = cos(angle/2) + axis * sin(angle/2)
+        x_ee = r_ee_1 * r_ee_2 * t_ee
+        obj.set_effector(x_ee)
+
+        return obj
 
 
 class LeftArm(NaoRobot):
@@ -102,7 +139,25 @@ class LeftArm(NaoRobot):
         DH_type = np.array([self.dq_joint_rotational] * 4)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
-        return DQ_SerialManipulatorDH(DH_matrix)
+        obj = DQ_SerialManipulatorDH(DH_matrix)
+
+        # Setting the base:
+        x_base = 1 + DQ.E * (1/2) * DQ([0,
+                                        self.shoulder_offset_y,
+                                        self.shoulder_offset_z])
+        obj.set_reference_frame(x_base)
+
+        # Setting the end effector:
+        t_ee = 1 + DQ.E * (1/2) * DQ([self.hand_offset_x + self.lower_arm_length,
+                                      0,
+                                      0])
+        angle = -pi/2
+        axis = DQ.k
+        r_ee = cos(angle/2) + axis * sin(angle/2)
+        x_ee = r_ee * t_ee
+        obj.set_effector(x_ee)
+
+        return obj
 
 
 class RightArm(NaoRobot):
@@ -125,7 +180,25 @@ class RightArm(NaoRobot):
         DH_type = np.array([self.dq_joint_rotational] * 4)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
-        return DQ_SerialManipulatorDH(DH_matrix)
+        obj = DQ_SerialManipulatorDH(DH_matrix)
+
+        # Setting the base:
+        x_base = 1 + DQ.E * (1/2) * DQ([0,
+                                        -self.shoulder_offset_y,
+                                        self.shoulder_offset_z])
+        obj.set_reference_frame(x_base)
+
+        # Setting the end effector:
+        t_ee = 1 + DQ.E * (1/2) * DQ([self.hand_offset_x + self.lower_arm_length,
+                                      0,
+                                      0])
+        angle = -pi/2
+        axis = DQ.k
+        r_ee = cos(angle/2) + axis * sin(angle/2)
+        x_ee = r_ee * t_ee
+        obj.set_effector(x_ee)
+
+        return obj
 
 
 class LeftLeg(NaoRobot):
@@ -149,7 +222,26 @@ class LeftLeg(NaoRobot):
         DH_type = np.array([self.dq_joint_rotational] * 6)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
-        return DQ_SerialManipulatorDH(DH_matrix)
+        obj = DQ_SerialManipulatorDH(DH_matrix)
+
+        # Setting the base:
+        x_base = 1 + DQ.E * (1/2) * DQ([0,
+                                        self.hip_offset_y,
+                                        -self.hip_offset_z])
+        obj.set_reference_frame(x_base)
+
+        # Setting the end effector:
+        t_ee = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
+        angle = pi
+        axis = DQ.k
+        r_ee_1 = cos(angle/2) + axis * sin(angle/2)
+        angle = -pi/2
+        axis = DQ.j
+        r_ee_2 = cos(angle/2) + axis * sin(angle/2)
+        x_ee = r_ee_1 * r_ee_2 * t_ee
+        obj.set_effector(x_ee)
+
+        return obj
 
 
 class RightLeg(NaoRobot):
@@ -173,5 +265,24 @@ class RightLeg(NaoRobot):
         DH_type = np.array([self.dq_joint_rotational] * 6)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
-        return DQ_SerialManipulatorDH(DH_matrix)
+        obj = DQ_SerialManipulatorDH(DH_matrix)
+
+        # Setting the base:
+        x_base = 1 + DQ.E * (1/2) * DQ([0,
+                                        -self.hip_offset_y,
+                                        -self.hip_offset_z])
+        obj.set_reference_frame(x_base)
+
+        # Setting the end effector:
+        t_ee = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
+        angle = pi
+        axis = DQ.k
+        r_ee_1 = cos(angle/2) + axis * sin(angle/2)
+        angle = -pi/2
+        axis = DQ.j
+        r_ee_2 = cos(angle/2) + axis * sin(angle/2)
+        x_ee = r_ee_1 * r_ee_2 * t_ee
+        obj.set_effector(x_ee)
+
+        return obj
 
