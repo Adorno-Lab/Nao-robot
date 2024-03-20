@@ -5,15 +5,13 @@ from dqrobotics.robot_modeling import DQ_SerialManipulatorDH
 
 class NaoRobot:
     """
-    Class to model the Aldebaran's robot NAO H25 (v5).
+    Class to deal with the Aldebaran's robot NAO H25 (v5).
 
     It uses the Denavit Hartenberg model provided by
-    https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
+
     """
-    def _robot_parameters(self):
-        """
-        Robot length parameters.
-        """
+    def __init__(self):
+        # Robot length parameters.
         self.shoulder_offset_y = 98
         self.elbow_offset_y = 15
         self.upper_arm_length = 105
@@ -32,10 +30,45 @@ class NaoRobot:
         self.bottom_camera_x = 48.8
         self.bottom_camera_z = 23.8
 
-    def top_camera_kinematics(self):
+        # Parameters to indicate if joint is rotational or prismatic,
+        # to be used with DQ_SerialManipulatorDH.
+        self.dq_joint_rotational = 0
+        self.dq_joint_prismatic = 1
+
+
+class NaoTopCamera(NaoRobot):
+    """
+    Class for the serial head chain, from torso to top camera.
+    Joints: HeadYaw, HeadPitch
+    """
+    def kinematics(self):
         """
-        DH parameters for the head chain, from torso to top camera.
-        Joints: HeadYaw, HeadPitch
+        Create the DQ_kinematics object for the chain. It uses the
+        Denavit-Hartenberg parameters provided by
+        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
+
+        :return: DQ_SerialManipulatorDH object with kinematics info.
+        """
+        DH_theta = np.array([0, -pi / 2])
+        DH_d = np.array([0, 0])
+        DH_a = np.array([0, 0])
+        DH_alpha = np.array([0, -pi / 2])
+        DH_type = np.array([self.dq_joint_rotational] * 2)
+        DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
+
+        return DQ_SerialManipulatorDH(DH_matrix)
+
+
+class NaoBottomCamera(NaoRobot):
+    """
+    Class for the serial head chain, from torso to bottom camera.
+    Joints: HeadYaw, HeadPitch
+    """
+    def kinematics(self):
+        """
+        Create the DQ_kinematics object for the chain. It uses the
+        Denavit-Hartenberg parameters provided by
+        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
 
         :return: DQ_SerialManipulatorDH object with kinematics info.
         """
@@ -43,31 +76,22 @@ class NaoRobot:
         DH_d = np.array([0, 0])
         DH_a = np.array([0, 0])
         DH_alpha = np.array([0, -pi/2])
-        DH_type = np.array([self._DQ_JOINT_ROTATIONAL] * 2)
+        DH_type = np.array([self.dq_joint_rotational] * 2)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         return DQ_SerialManipulatorDH(DH_matrix)
 
-    def bottom_camera_kinematics(self):
-        """
-        DH parameters for the head chain, from torso to bottom camera.
-        Joints: HeadYaw, HeadPitch
 
-        :return: DQ_SerialManipulatorDH object with kinematics info.
+class LeftArm(NaoRobot):
+    """
+    Class for the serial left arm chain, from torso to left hand.
+    Joints: LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRow
+    """
+    def kinematics(self):
         """
-        DH_theta = np.array([0, -pi/2])
-        DH_d = np.array([0, 0])
-        DH_a = np.array([0, 0])
-        DH_alpha = np.array([0, -pi/2])
-        DH_type = np.array([self._DQ_JOINT_ROTATIONAL] * 2)
-        DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
-
-        return DQ_SerialManipulatorDH(DH_matrix)
-
-    def left_arm_kinematics(self):
-        """
-        DH parameters for the left arm chain, from torso to left hand.
-        Joints: LShoulderPitch, LShoulderRoll, LElbowYaw, LElbowRow
+        Create the DQ_kinematics object for the chain. It uses the
+        Denavit-Hartenberg parameters provided by
+        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
 
         :return: DQ_SerialManipulatorDH object with kinematics info.
         """
@@ -75,15 +99,22 @@ class NaoRobot:
         DH_d = np.array([0, 0, self.upper_arm_length, 0])
         DH_a = np.array([0, 0, self.elbow_offset_y, 0])
         DH_alpha = np.array([-pi/2, pi/2, pi/2, -pi/2])
-        DH_type = np.array([self._DQ_JOINT_ROTATIONAL] * 4)
+        DH_type = np.array([self.dq_joint_rotational] * 4)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         return DQ_SerialManipulatorDH(DH_matrix)
 
-    def right_arm_kinematics(self):
+
+class RightArm(NaoRobot):
+    """
+    Class for the serial right arm chain, from torso to right hand.
+    Joints: RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRow
+    """
+    def kinematics(self):
         """
-        DH parameters for the right arm chain, from torso to right hand.
-        Joints: RShoulderPitch, RShoulderRoll, RElbowYaw, RElbowRow
+        Create the DQ_kinematics object for the chain. It uses the
+        Denavit-Hartenberg parameters provided by
+        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
 
         :return: DQ_SerialManipulatorDH object with kinematics info.
         """
@@ -91,16 +122,23 @@ class NaoRobot:
         DH_d = np.array([0, 0, self.upper_arm_length, 0])
         DH_a = np.array([0, 0, -self.elbow_offset_y, 0])
         DH_alpha = np.array([-pi/2, pi/2, pi/2, -pi/2])
-        DH_type = np.array([self._DQ_JOINT_ROTATIONAL] * 4)
+        DH_type = np.array([self.dq_joint_rotational] * 4)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         return DQ_SerialManipulatorDH(DH_matrix)
 
-    def left_leg_kinematics(self):
+
+class LeftLeg(NaoRobot):
+    """
+    Class for the serial left leg chain, from torso to left foot.
+    Joints: LHipYawPitch, LHipRoll, LHipPitch,
+            LKneePitch, LAnklePitch, LAnkleRoll
+    """
+    def kinematics(self):
         """
-        DH parameters for the left leg chain, from torso to left foot.
-        Joints: LHipYawPitch, LHipRoll, LHipPitch,
-                LKneePitch, LAnklePitch, LAnkleRoll
+        Create the DQ_kinematics object for the chain. It uses the
+        Denavit-Hartenberg parameters provided by
+        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
 
         :return: DQ_SerialManipulatorDH object with kinematics info.
         """
@@ -108,16 +146,23 @@ class NaoRobot:
         DH_d = np.array([0, 0, 0, 0, 0, 0])
         DH_a = np.array([0, 0, 0, -self.thigh_length, -self.tibia_length, 0])
         DH_alpha = np.array([-3*pi/4, -pi/2, pi/2, 0, 0, -pi/2])
-        DH_type = np.array([self._DQ_JOINT_ROTATIONAL] * 6)
+        DH_type = np.array([self.dq_joint_rotational] * 6)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         return DQ_SerialManipulatorDH(DH_matrix)
 
-    def right_leg_kinematics(self):
+
+class RightLeg(NaoRobot):
+    """
+    Class for the serial right leg chain, from torso to right foot.
+    Joints: RHipYawPitch, RHipRoll, RHipPitch,
+            RKneePitch, RAnklePitch, RAnkleRoll
+    """
+    def kinematics(self):
         """
-        DH parameters for the right leg chain, from torso to right foot.
-        Joints: RHipYawPitch, RHipRoll, RHipPitch,
-                RKneePitch, RAnklePitch, RAnkleRoll
+        Create the DQ_kinematics object for the chain. It uses the
+        Denavit-Hartenberg parameters provided by
+        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
 
         :return: DQ_SerialManipulatorDH object with kinematics info.
         """
@@ -125,16 +170,8 @@ class NaoRobot:
         DH_d = np.array([0, 0, 0, 0, 0, 0])
         DH_a = np.array([0, 0, 0, -self.thigh_length, -self.tibia_length, 0])
         DH_alpha = np.array([-pi/4, -pi/2, pi/2, 0, 0, -pi/2])
-        DH_type = np.array([self._DQ_JOINT_ROTATIONAL] * 6)
+        DH_type = np.array([self.dq_joint_rotational] * 6)
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         return DQ_SerialManipulatorDH(DH_matrix)
 
-    def __init__(self):
-        # Define robot parameters.
-        self._robot_parameters()
-
-        # Parameters to indicate if joint is rotational or prismatic,
-        # to be used with DQ_SerialManipulatorDH.
-        self._DQ_JOINT_ROTATIONAL = 0
-        self._DQ_JOINT_PRISMATIC = 1
