@@ -31,7 +31,7 @@ class NaoRobot:
         self.hip_offset_z = 0.085
         self.hip_offset_y = 0.050
         self.thigh_length = 0.100
-        self.tibia_length = 0.10290
+        self.tibia_length = 0.1029
         self.foot_height = 0.04519
 
         # Parameters to indicate if joint is rotational or prismatic,
@@ -183,30 +183,20 @@ class LeftLeg(NaoRobot):
 
         :return: DQ_SerialManipulatorDH object with kinematics info.
         """
-        DH_theta = [-pi/2, pi/4, 0, 0, 0, 0]
-        DH_d = [0, 0, 0, 0, 0, 0]
-        DH_a = [0, 0, 0, -self.thigh_length, -self.tibia_length, 0]
-        DH_alpha = [-3*pi/4, -pi/2, pi/2, 0, 0, -pi/2]
+        DH_theta = [0, pi/2, 3*pi/4, 0, 0, 0]
+        DH_d = [0, 0, 0, self.hip_offset_y, 0, 0]
+        DH_a = [0, 0, 0, -(self.hip_offset_z+self.thigh_length), -self.tibia_length, 0]
+        DH_alpha = [-pi/4, pi/2, pi/2, 0, 0, -pi/2]
         DH_type = [self.dq_joint_rotational] * 6
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         obj = DQ_SerialManipulatorDH(DH_matrix)
 
-        # Setting the base:
-        x_base = 1 + DQ.E * (1/2) * DQ([0,
-                                        self.hip_offset_y,
-                                        -self.hip_offset_z])
-        obj.set_reference_frame(x_base)
-
         # Setting the end effector:
-        t_ee = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
-        angle = pi
-        axis = DQ.k
-        r_ee_1 = cos(angle/2) + axis * sin(angle/2)
-        angle = -pi/2
-        axis = DQ.j
-        r_ee_2 = cos(angle/2) + axis * sin(angle/2)
-        x_ee = r_ee_1 * r_ee_2 * t_ee
+        tz = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
+        ry = cos((pi/2)/2) + DQ.j * sin((pi/2)/2)
+        rz = cos(pi/2) + DQ.k * sin(pi/2)
+        x_ee = ry * rz * tz
         obj.set_effector(x_ee)
 
         return obj
@@ -226,30 +216,20 @@ class RightLeg(NaoRobot):
 
         :return: DQ_SerialManipulatorDH object with kinematics info.
         """
-        DH_theta = [-pi/2, -pi/4, 0, 0, 0, 0]
-        DH_d = [0, 0, 0, 0, 0, 0]
-        DH_a = [0, 0, 0, -self.thigh_length, -self.tibia_length, 0]
-        DH_alpha = [-pi/4, -pi/2, pi/2, 0, 0, -pi/2]
+        DH_theta = [0, pi/2, pi/4, 0, 0, 0]
+        DH_d = [0, 0, 0, -self.hip_offset_y, 0, 0]
+        DH_a = [0, 0, 0, -(self.hip_offset_z+self.thigh_length), -self.tibia_length, 0]
+        DH_alpha = [pi/4, pi/2, pi/2, 0, 0, -pi/2]
         DH_type = [self.dq_joint_rotational] * 6
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         obj = DQ_SerialManipulatorDH(DH_matrix)
 
-        # Setting the base:
-        x_base = 1 + DQ.E * (1/2) * DQ([0,
-                                        -self.hip_offset_y,
-                                        -self.hip_offset_z])
-        obj.set_reference_frame(x_base)
-
         # Setting the end effector:
-        t_ee = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
-        angle = pi
-        axis = DQ.k
-        r_ee_1 = cos(angle/2) + axis * sin(angle/2)
-        angle = -pi/2
-        axis = DQ.j
-        r_ee_2 = cos(angle/2) + axis * sin(angle/2)
-        x_ee = r_ee_1 * r_ee_2 * t_ee
+        tz = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
+        ry = cos((pi / 2) / 2) + DQ.j * sin((pi / 2) / 2)
+        rz = cos(pi / 2) + DQ.k * sin(pi / 2)
+        x_ee = ry * rz * tz
         obj.set_effector(x_ee)
 
         return obj
