@@ -4,12 +4,6 @@ from dqrobotics.robot_modeling import DQ_SerialManipulatorDH
 
 
 class NaoRobot:
-    """
-    Class to deal with the Aldebaran's robot NAO H25 (v5).
-
-    It uses the Denavit Hartenberg model provided by
-
-    """
     def __init__(self):
         # Robot length parameters.
         self.neck_offset_z = 0.1265
@@ -17,8 +11,8 @@ class NaoRobot:
         self.bottom_camera_z = 0.01774
         self.top_camera_x = 0.05871
         self.top_camera_z = 0.06364
-        self.top_camera_angle_y = 1.2 * pi / 180
-        self.bottom_camera_angle_y = 39.7 * pi / 180
+        self.top_camera_angle_y = 0.0209
+        self.bottom_camera_angle_y = 0.6929
 
         self.shoulder_offset_z = 0.100
         self.shoulder_offset_y = 0.098
@@ -47,27 +41,29 @@ class TopCamera(NaoRobot):
     """
     def kinematics(self):
         """
-        Create the DQ_kinematics object for the chain. It uses the
-        Denavit-Hartenberg parameters provided by
-        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
+        Create the DQ_kinematics object for the chain.
 
-        :return: DQ_SerialManipulatorDH object with kinematics info.
+        :return: DQ_SerialManipulatorDH object.
         """
         DH_theta = [0, 0]
-        DH_d = [self.neck_offset_z, 0]
+        DH_d = [0, 0]
         DH_a = [0, 0]
-        DH_alpha = [0, -pi/2]
+        DH_alpha = [-pi/2, 0]
         DH_type = [self.dq_joint_rotational] * 2
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         obj = DQ_SerialManipulatorDH(DH_matrix)
 
+        # Setting base and reference:
+        tz = 1 + DQ.E * (1/2) * DQ([0, 0, self.neck_offset_z])
+        obj.set_base_frame(tz)
+        obj.set_reference_frame(tz)
+
         # Setting the end effector:
-        txz = 1 + DQ.E * (1/2) * DQ([self.top_camera_x, 0, self.top_camera_z])
         rx = cos((pi/2)/2) + DQ.i * sin((pi/2)/2)
+        txz = 1 + DQ.E * (1/2) * DQ([self.top_camera_x, 0, self.top_camera_z])
         ry = cos(self.top_camera_angle_y/2) + DQ.j * sin(self.top_camera_angle_y/2)
-        x_ee = rx * txz * ry
-        obj.set_effector(x_ee)
+        obj.set_effector(rx * txz * ry)
 
         return obj
 
@@ -79,27 +75,29 @@ class BottomCamera(NaoRobot):
     """
     def kinematics(self):
         """
-        Create the DQ_kinematics object for the chain. It uses the
-        Denavit-Hartenberg parameters provided by
-        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
+        Create the DQ_kinematics object for the chain.
 
-        :return: DQ_SerialManipulatorDH object with kinematics info.
+        :return: DQ_SerialManipulatorDH object.
         """
         DH_theta = [0, 0]
-        DH_d = [self.neck_offset_z, 0]
+        DH_d = [0, 0]
         DH_a = [0, 0]
-        DH_alpha = [0, -pi/2]
+        DH_alpha = [-pi/2, 0]
         DH_type = [self.dq_joint_rotational] * 2
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         obj = DQ_SerialManipulatorDH(DH_matrix)
 
-        # Setting the end effector:
-        txz = 1 + DQ.E * (1/2) * DQ([self.bottom_camera_x, 0, self.bottom_camera_z])
+        # Setting base and reference:
+        tz = 1 + DQ.E * (1/2) * DQ([0, 0, self.neck_offset_z])
+        obj.set_base_frame(tz)
+        obj.set_reference_frame(tz)
+
+        # Setting end effector:
         rx = cos((pi/2)/2) + DQ.i * sin((pi/2)/2)
+        txz = 1 + DQ.E * (1/2) * DQ([self.bottom_camera_x, 0, self.bottom_camera_z])
         ry = cos(self.bottom_camera_angle_y/2) + DQ.j * sin(self.bottom_camera_angle_y/2)
-        x_ee = rx * txz * ry
-        obj.set_effector(x_ee)
+        obj.set_effector(rx * txz * ry)
 
         return obj
 
@@ -111,28 +109,30 @@ class LeftArm(NaoRobot):
     """
     def kinematics(self):
         """
-        Create the DQ_kinematics object for the chain. It uses the
-        Denavit-Hartenberg parameters provided by
-        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
+        Create the DQ_kinematics object for the chain.
 
-        :return: DQ_SerialManipulatorDH object with kinematics info.
+        :return: DQ_SerialManipulatorDH object.
         """
-
-        DH_theta = [0, 0, pi/2, 0, 0]
-        DH_d = [self.shoulder_offset_z, self.shoulder_offset_y, 0, self.upper_arm_length, 0]
-        DH_a = [0, 0, self.elbow_offset_y, 0, 0]
-        DH_alpha = [-pi/2, pi/2, pi/2, -pi/2, pi/2]
+        DH_theta = [0, pi/2, 0, 0, 0]
+        DH_d = [self.shoulder_offset_y, 0, self.upper_arm_length, 0, 0]
+        DH_a = [0, self.elbow_offset_y, 0, 0, 0]
+        DH_alpha = [pi/2, pi/2, -pi/2, pi/2, 0]
         DH_type = [self.dq_joint_rotational] * 5
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         obj = DQ_SerialManipulatorDH(DH_matrix)
 
-        # Setting the end effector:
-        txz = 1 + DQ.E * (1/2) * DQ([self.hand_offset_x + self.lower_arm_length, 0, -self.hand_offset_z])
+        # Setting base and reference:
+        tz = 1 + DQ.E * (1/2) * DQ([0, 0, self.shoulder_offset_z])
+        rx = cos((-pi / 2) / 2) + DQ.i * sin((-pi / 2) / 2)
+        obj.set_base_frame(tz * rx)
+        obj.set_reference_frame(tz * rx)
+
+        # Setting end effector:
         rx = cos((-pi/2)/2) + DQ.i * sin((-pi/2)/2)
         rz = cos((-pi/2)/2) + DQ.k * sin((-pi/2)/2)
-        x_ee = rx * rz * txz
-        obj.set_effector(x_ee)
+        txz = 1 + DQ.E * (1/2) * DQ([self.hand_offset_x + self.lower_arm_length, 0, -self.hand_offset_z])
+        obj.set_effector(rx * rz * txz)
 
         return obj
 
@@ -144,27 +144,30 @@ class RightArm(NaoRobot):
     """
     def kinematics(self):
         """
-        Create the DQ_kinematics object for the chain. It uses the
-        Denavit-Hartenberg parameters provided by
-        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
+        Create the DQ_kinematics object for the chain.
 
-        :return: DQ_SerialManipulatorDH object with kinematics info.
+        :return: DQ_SerialManipulatorDH object.
         """
-        DH_theta = [0, 0, pi/2, 0, 0]
-        DH_d = [self.shoulder_offset_z, -self.shoulder_offset_y, 0, self.upper_arm_length, 0]
-        DH_a = [0, 0, -self.elbow_offset_y, 0, 0]
-        DH_alpha = [-pi/2, pi/2, pi/2, -pi/2, pi/2]
+        DH_theta = [0, pi/2, 0, 0, 0]
+        DH_d = [-self.shoulder_offset_y, 0, self.upper_arm_length, 0, 0]
+        DH_a = [0, -self.elbow_offset_y, 0, 0, 0]
+        DH_alpha = [pi/2, pi/2, -pi/2, pi/2, 0]
         DH_type = [self.dq_joint_rotational] * 5
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         obj = DQ_SerialManipulatorDH(DH_matrix)
 
-        # Setting the end effector:
-        txz = 1 + DQ.E * (1/2) * DQ([self.lower_arm_length, 0, 0])
+        # Setting base and reference:
+        tz = 1 + DQ.E * (1 / 2) * DQ([0, 0, self.shoulder_offset_z])
+        rx = cos((-pi / 2) / 2) + DQ.i * sin((-pi / 2) / 2)
+        obj.set_base_frame(tz * rx)
+        obj.set_reference_frame(tz * rx)
+
+        # Setting end effector:
         rx = cos((-pi/2)/2) + DQ.i * sin((-pi/2)/2)
         rz = cos((-pi/2)/2) + DQ.k * sin((-pi/2)/2)
-        x_ee = rx * rz * txz
-        obj.set_effector(x_ee)
+        txz = 1 + DQ.E * (1/2) * DQ( [self.hand_offset_x + self.lower_arm_length, 0, -self.hand_offset_z])
+        obj.set_effector(rx * rz * txz)
 
         return obj
 
@@ -177,27 +180,29 @@ class LeftLeg(NaoRobot):
     """
     def kinematics(self):
         """
-        Create the DQ_kinematics object for the chain. It uses the
-        Denavit-Hartenberg parameters provided by
-        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
+        Create the DQ_kinematics object for the chain.
 
-        :return: DQ_SerialManipulatorDH object with kinematics info.
+        :return: DQ_SerialManipulatorDH object.
         """
-        DH_theta = [0, pi/2, 3*pi/4, 0, 0, 0]
-        DH_d = [0, 0, 0, self.hip_offset_y, 0, 0]
-        DH_a = [0, 0, 0, -(self.hip_offset_z+self.thigh_length), -self.tibia_length, 0]
-        DH_alpha = [-pi/4, pi/2, pi/2, 0, 0, -pi/2]
+        DH_theta = [pi/2, 3*pi/4, 0, 0, 0, 0]
+        DH_d = [0, 0, self.hip_offset_y, 0, 0, 0]
+        DH_a = [0, 0, -(self.hip_offset_z+self.thigh_length), -self.tibia_length, 0, 0]
+        DH_alpha = [pi/2, pi/2, 0, 0, -pi/2, 0]
         DH_type = [self.dq_joint_rotational] * 6
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         obj = DQ_SerialManipulatorDH(DH_matrix)
 
-        # Setting the end effector:
-        tz = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
+        # Setting base and reference:
+        rx = cos((-pi/4)/2) + DQ.i * sin((-pi/4)/2)
+        obj.set_base_frame(rx)
+        obj.set_reference_frame(rx)
+
+        # Setting end effector (foot):
         ry = cos((pi/2)/2) + DQ.j * sin((pi/2)/2)
         rz = cos(pi/2) + DQ.k * sin(pi/2)
-        x_ee = ry * rz * tz
-        obj.set_effector(x_ee)
+        tz = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
+        obj.set_effector(ry * rz * tz)
 
         return obj
 
@@ -210,27 +215,29 @@ class RightLeg(NaoRobot):
     """
     def kinematics(self):
         """
-        Create the DQ_kinematics object for the chain. It uses the
-        Denavit-Hartenberg parameters provided by
-        https://www.cs.umd.edu/~nkofinas/Projects/KofinasThesis.pdf.
+        Create the DQ_kinematics object for the chain.
 
-        :return: DQ_SerialManipulatorDH object with kinematics info.
+        :return: DQ_SerialManipulatorDH object.
         """
-        DH_theta = [0, pi/2, pi/4, 0, 0, 0]
-        DH_d = [0, 0, 0, -self.hip_offset_y, 0, 0]
-        DH_a = [0, 0, 0, -(self.hip_offset_z+self.thigh_length), -self.tibia_length, 0]
-        DH_alpha = [pi/4, pi/2, pi/2, 0, 0, -pi/2]
+        DH_theta = [pi/2, pi/4, 0, 0, 0, 0]
+        DH_d = [0, 0, -self.hip_offset_y, 0, 0, 0]
+        DH_a = [0, 0, -(self.hip_offset_z+self.thigh_length), -self.tibia_length, 0, 0]
+        DH_alpha = [pi/2, pi/2, 0, 0, -pi/2, 0]
         DH_type = [self.dq_joint_rotational] * 6
         DH_matrix = [DH_theta, DH_d, DH_a, DH_alpha, DH_type]
 
         obj = DQ_SerialManipulatorDH(DH_matrix)
 
-        # Setting the end effector:
+        # Setting base and reference:
+        rx = cos((pi/4)/2) + DQ.i * sin((pi/4)/2)
+        obj.set_base_frame(rx)
+        obj.set_reference_frame(rx)
+
+        # Setting end effector (foot):
+        ry = cos((pi/2)/2) + DQ.j * sin((pi/2)/2)
+        rz = cos(pi/2) + DQ.k * sin(pi/2)
         tz = 1 + DQ.E * (1/2) * DQ([0, 0, -self.foot_height])
-        ry = cos((pi / 2) / 2) + DQ.j * sin((pi / 2) / 2)
-        rz = cos(pi / 2) + DQ.k * sin(pi / 2)
-        x_ee = ry * rz * tz
-        obj.set_effector(x_ee)
+        obj.set_effector(ry * rz * tz)
 
         return obj
 
