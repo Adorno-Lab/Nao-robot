@@ -1,7 +1,6 @@
 % Example of simulation of the NAO robot using CoppeliaSim. It creates
-% an object for each chain, and plots them all together. The arms 
-% configurations change from the initial configuration (pointing forwards)
-% to both arms pointing upwards.
+% an object for each chain. The arms configurations change from the initial
+% configuration (pointing forwards) to both arms pointing upwards.
 
 % Before running:
 %   - Open CoppeliaSim
